@@ -38,7 +38,8 @@ public class AtmosphereController extends Controller {
 
 
     public Result http() throws Throwable {
-        return ok(new PlayAsyncIOWriter(config, request()).internal(), response());
+        // TODO: Wrong status code on error!
+        return ok(new PlayAsyncIOWriter(request(), response()).internal());
     }
 
 }

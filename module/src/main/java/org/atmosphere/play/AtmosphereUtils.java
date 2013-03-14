@@ -52,7 +52,22 @@ public class AtmosphereUtils {
 
         final Map<String, Object> attributes = new HashMap<String, Object>();
 
-        boolean hasBody = request.body() != null && request.body().asRaw() != null;
+        boolean hasBody = request.body() != null;
+        byte[] body = {};
+
+        // This is crazy: asRaw return null with Firefox + SSE
+        // TODO: char encoding issue, needs to decode from content-type.
+        if (hasBody) {
+            if (request.body().asText() != null) {
+                body = request.body().asText().getBytes("utf-8");
+            } else if (request.body().asRaw() != null) {
+                body = request.body().asRaw().asBytes();
+            } else if (request.body().asJson() != null) {
+                body = request.body().asJson().asText().getBytes("utf-8");
+            } else if (request.body().asXml() != null) {
+                body = request.body().asXml().getTextContent().getBytes("utf-8");
+            }
+        }
 
         URI uri = URI.create(request.remoteAddress());
         AtmosphereRequest.Builder requestBuilder = new AtmosphereRequest.Builder();
@@ -72,7 +87,7 @@ public class AtmosphereUtils {
                         //                .localPort(((InetSocketAddress) ctx.getChannel().getLocalAddress()).getPort())
                         //                .localAddr(((InetSocketAddress) ctx.getChannel().getLocalAddress()).getAddress().getHostAddress())
                         //                .localName(((InetSocketAddress) ctx.getChannel().getLocalAddress()).getHostName())
-                .inputStream(hasBody ? new ByteArrayInputStream(request.body().asRaw().asBytes()) : new ByteArrayInputStream(new byte[]{}))
+                .inputStream(hasBody ? new ByteArrayInputStream(body) : new ByteArrayInputStream(new byte[]{}))
                 .build();
 
         return r;

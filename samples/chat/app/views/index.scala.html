@@ -21,7 +21,7 @@
                 var logged = false;
                 var socket = $.atmosphere;
                 var subSocket;
-                var transport = 'websocket';
+                var transport = 'sse';
 
                 // We are now ready to cut the request
                 var request = { url: document.location.toString() + 'chat',
@@ -29,7 +29,7 @@
                     logLevel : 'debug',
                     transport : transport ,
                     trackMessageLength : true,
-                    fallbackTransport: 'long-polling'};
+                    fallbackTransport: 'websocket'};
 
 
                 request.onOpen = function(response) {

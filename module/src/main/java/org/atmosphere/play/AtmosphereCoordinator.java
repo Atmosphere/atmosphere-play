@@ -33,7 +33,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.atmosphere.cpr.HeaderConfig.SSE_TRANSPORT;
 import static org.atmosphere.cpr.HeaderConfig.X_ATMOSPHERE_TRANSPORT;
 
 public class AtmosphereCoordinator {
@@ -98,8 +97,10 @@ public class AtmosphereCoordinator {
                 transport = request.getHeader(X_ATMOSPHERE_TRANSPORT);
             }
 
-            if (a.type() == Action.TYPE.SUSPEND && transport.equalsIgnoreCase(HeaderConfig.LONG_POLLING_TRANSPORT)) {
-                resumeOnBroadcast = true;
+            if (a.type() == Action.TYPE.SUSPEND) {
+                if (transport.equalsIgnoreCase(HeaderConfig.LONG_POLLING_TRANSPORT) || transport.equalsIgnoreCase(HeaderConfig.JSONP_TRANSPORT)) {
+                    resumeOnBroadcast = true;
+                }
             } else {
                 keptOpen = false;
             }
@@ -127,9 +128,6 @@ public class AtmosphereCoordinator {
             keptOpen = false;
         } finally {
             if (w != null && !resumeOnBroadcast && !keptOpen) {
-                if (!w.byteWritten()) {
-                    w.writeError((AtmosphereResponse) null, 200, "OK");
-                }
                 if (!skipClose) {
                     w.close((AtmosphereResponse) null);
                 }

@@ -22,6 +22,7 @@ import org.atmosphere.cpr.AtmosphereInterceptorWriter;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResponse;
 import org.atmosphere.cpr.FrameworkConfig;
+import org.atmosphere.cpr.HeaderConfig;
 import org.atmosphere.util.ByteArrayAsyncWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,10 +48,8 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
     protected Results.Chunks<String> chunks;
     protected Results.Chunks.Out<String> out;
     private boolean resumeOnBroadcast;
-    private AtomicBoolean headersWritten = new AtomicBoolean();
-    private final Http.Response response;
 
-    public PlayAsyncIOWriter(final AtmosphereConfig config, final Http.Request request, Http.Response response) {
+    public PlayAsyncIOWriter(final Http.Request request, final Http.Response response) {
         chunks = new Results.Chunks<String>(JavaResults.writeString(Codec.utf_8()), JavaResults.contentTypeOfString((Codec.utf_8()))) {
             @Override
             public void onReady(Results.Chunks.Out<String> oout) {
@@ -70,7 +69,6 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
                             .asyncIOWriter(PlayAsyncIOWriter.this)
                             .writeHeader(false)
                             .request(r).build();
-
                     keepAlive = AtmosphereCoordinator.instance().route(r, res);
                 } catch (Throwable e) {
                     logger.error("", e);
@@ -82,8 +80,15 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
                 }
             }
         };
-        this.response = response;
+
+        // TODO: Configuring headers in Atmosphere won't work as the onReady is asynchronously called.
+        // TODO: Some Broadcaster's Cache won't work as well.
+        String[] transport = request.queryString() != null ? request.queryString().get(HeaderConfig.X_ATMOSPHERE_TRANSPORT) : null;
+        if (transport != null && transport.length > 0 && transport[0].equalsIgnoreCase(HeaderConfig.SSE_TRANSPORT)) {
+            response.setContentType("text/event-stream");
+        }
     }
+
 
     public Results.Chunks internal() {
         return chunks;
@@ -139,7 +144,7 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
 
     @Override
     public AsyncIOWriter write(final AtmosphereResponse r, byte[] data, int offset, int length) throws IOException {
-        logger.trace("Writing {}", r.resource().uuid());
+        logger.trace("Writing {} with transport {}", r.resource().uuid(), r.resource().transport());
         boolean transform = filters.size() > 0 && r.getStatus() < 400;
         if (transform) {
             data = transform(r, data, offset, length);
@@ -148,12 +153,6 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
         }
 
         pendingWrite.incrementAndGet();
-
-        if (!headersWritten.getAndSet(true)) {
-            for (String s : r.getHeaderNames()) {
-                response.setHeader(s, r.getHeader(s));
-            }
-        }
 
         out.write(new String(data, offset, length, r.getCharacterEncoding()));
         byteWritten = true;
