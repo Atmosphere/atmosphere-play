@@ -18,3 +18,9 @@ target
 test-output
 nbactions.xml
 samples/gwt-demo/src/main/webapp/WEB-INF/classes/
+=======
+
+# Package Files #
+*.jar
+*.war
+*.ear
