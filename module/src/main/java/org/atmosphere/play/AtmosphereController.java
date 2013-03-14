@@ -38,7 +38,7 @@ public class AtmosphereController extends Controller {
 
 
     public Result http() throws Throwable {
-        return ok(new PlayAsyncIOWriter(config, request()).internal());
+        return ok(new PlayAsyncIOWriter(config, request()).internal(), response());
     }
 
 }

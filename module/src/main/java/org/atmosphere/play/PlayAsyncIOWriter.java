@@ -47,8 +47,10 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
     protected Results.Chunks<String> chunks;
     protected Results.Chunks.Out<String> out;
     private boolean resumeOnBroadcast;
+    private AtomicBoolean headersWritten = new AtomicBoolean();
+    private final Http.Response response;
 
-    public PlayAsyncIOWriter(final AtmosphereConfig config, final Http.Request request) {
+    public PlayAsyncIOWriter(final AtmosphereConfig config, final Http.Request request, Http.Response response) {
         chunks = new Results.Chunks<String>(JavaResults.writeString(Codec.utf_8()), JavaResults.contentTypeOfString((Codec.utf_8()))) {
             @Override
             public void onReady(Results.Chunks.Out<String> oout) {
@@ -80,6 +82,7 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
                 }
             }
         };
+        this.response = response;
     }
 
     public Results.Chunks internal() {
@@ -145,6 +148,12 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
         }
 
         pendingWrite.incrementAndGet();
+
+        if (!headersWritten.getAndSet(true)) {
+            for (String s : r.getHeaderNames()) {
+                response.setHeader(s, r.getHeader(s));
+            }
+        }
 
         out.write(new String(data, offset, length, r.getCharacterEncoding()));
         byteWritten = true;
