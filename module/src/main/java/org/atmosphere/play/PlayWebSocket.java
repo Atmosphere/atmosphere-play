@@ -50,7 +50,7 @@ public class PlayWebSocket extends org.atmosphere.websocket.WebSocket implements
                 in.onClose(new F.Callback0() {
                     @Override
                     public void invoke() throws Throwable {
-                        close(resource().getResponse());
+                        webSocketProcessor.close(PlayWebSocket.this, 1002);
                     }
                 });
                 in.onMessage(new F.Callback<String>() {
@@ -69,6 +69,7 @@ public class PlayWebSocket extends org.atmosphere.websocket.WebSocket implements
                     webSocketProcessor.open(PlayWebSocket.this, r, AtmosphereResponse.newInstance(config, r, PlayWebSocket.this));
                 } catch (IOException e) {
                     logger.error("", e);
+                    out.close();
                 }
             }
         };

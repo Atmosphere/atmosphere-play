@@ -30,8 +30,8 @@ public class AtmosphereUtils {
         final String base = getBaseUri(request);
         final URI requestUri = new URI(base.substring(0, base.length() - 1) + request.uri());
         String ct = "text/plain";
-        if (request.getHeader("Content-Type") != null && request.headers().get("Content-Type").length > 0) {
-            ct = request.headers().get("Content-Type")[0];
+        if (request.getHeader("Content-Type") != null) {
+            ct = request.getHeader("Content-Type");
         }
         String method = request.method();
 
@@ -52,6 +52,8 @@ public class AtmosphereUtils {
 
         final Map<String, Object> attributes = new HashMap<String, Object>();
 
+        boolean hasBody = request.body() != null && request.body().asRaw() != null;
+
         URI uri = URI.create(request.remoteAddress());
         AtmosphereRequest.Builder requestBuilder = new AtmosphereRequest.Builder();
         AtmosphereRequest r = requestBuilder.requestURI(url.substring(l))
@@ -70,7 +72,7 @@ public class AtmosphereUtils {
                         //                .localPort(((InetSocketAddress) ctx.getChannel().getLocalAddress()).getPort())
                         //                .localAddr(((InetSocketAddress) ctx.getChannel().getLocalAddress()).getAddress().getHostAddress())
                         //                .localName(((InetSocketAddress) ctx.getChannel().getLocalAddress()).getHostName())
-                .inputStream(request.body() != null ? new ByteArrayInputStream(request.body().asRaw().asBytes()) : new ByteArrayInputStream(new byte[]{}))
+                .inputStream(hasBody ? new ByteArrayInputStream(request.body().asRaw().asBytes()) : new ByteArrayInputStream(new byte[]{}))
                 .build();
 
         return r;

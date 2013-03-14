@@ -16,12 +16,29 @@
 package org.atmosphere.play;
 
 import org.atmosphere.container.NettyCometSupport;
+import org.atmosphere.cpr.Action;
+import org.atmosphere.cpr.AsynchronousProcessor;
 import org.atmosphere.cpr.AtmosphereFramework;
+import org.atmosphere.cpr.AtmosphereRequest;
+import org.atmosphere.cpr.AtmosphereResponse;
+import org.atmosphere.cpr.FrameworkConfig;
+import org.atmosphere.cpr.HeaderConfig;
 import org.atmosphere.util.ExecutorsFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.atmosphere.cpr.HeaderConfig.SSE_TRANSPORT;
+import static org.atmosphere.cpr.HeaderConfig.X_ATMOSPHERE_TRANSPORT;
 
 public class AtmosphereCoordinator {
+    private static final Logger logger = LoggerFactory.getLogger(AtmosphereCoordinator.class);
+
     private final AtmosphereFramework framework;
     public final static AtmosphereCoordinator instance = new AtmosphereCoordinator();
     private final ScheduledExecutorService suspendTimer;
@@ -62,5 +79,62 @@ public class AtmosphereCoordinator {
 
     public AtmosphereFramework framework() {
         return framework;
+    }
+
+    public boolean route(AtmosphereRequest request, AtmosphereResponse response) throws IOException {
+        boolean resumeOnBroadcast = false;
+        boolean keptOpen = true;
+        boolean skipClose = false;
+        final PlayAsyncIOWriter w = PlayAsyncIOWriter.class.cast(response.getAsyncIOWriter());
+
+        try {
+
+            Action a = framework.doCometSupport(request, response);
+            final AsynchronousProcessor.AsynchronousProcessorHook hook = (AsynchronousProcessor.AsynchronousProcessorHook)
+                    request.getAttribute(FrameworkConfig.ASYNCHRONOUS_HOOK);
+
+            String transport = (String) request.getAttribute(FrameworkConfig.TRANSPORT_IN_USE);
+            if (transport == null) {
+                transport = request.getHeader(X_ATMOSPHERE_TRANSPORT);
+            }
+
+            if (a.type() == Action.TYPE.SUSPEND && transport.equalsIgnoreCase(HeaderConfig.LONG_POLLING_TRANSPORT)) {
+                resumeOnBroadcast = true;
+            } else {
+                keptOpen = false;
+            }
+
+            logger.debug("Transport {} resumeOnBroadcast {}", transport, resumeOnBroadcast);
+
+            final Action action = (Action) request.getAttribute(NettyCometSupport.SUSPEND);
+            if (action != null && action.type() == Action.TYPE.SUSPEND && action.timeout() != -1) {
+                final AtomicReference<Future<?>> f = new AtomicReference();
+                f.set(suspendTimer.scheduleAtFixedRate(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!w.isClosed() && (System.currentTimeMillis() - w.lastTick()) > action.timeout()) {
+                            hook.timedOut();
+                            f.get().cancel(true);
+                        }
+                    }
+                }, action.timeout(), action.timeout(), TimeUnit.MILLISECONDS));
+            } else if (action != null && action.type() == Action.TYPE.RESUME) {
+                resumeOnBroadcast = false;
+            }
+            w.resumeOnBroadcast(resumeOnBroadcast);
+        } catch (Throwable e) {
+            logger.error("Unable to process request", e);
+            keptOpen = false;
+        } finally {
+            if (w != null && !resumeOnBroadcast && !keptOpen) {
+                if (!w.byteWritten()) {
+                    w.writeError((AtmosphereResponse) null, 200, "OK");
+                }
+                if (!skipClose) {
+                    w.close((AtmosphereResponse) null);
+                }
+            }
+        }
+        return keptOpen;
     }
 }

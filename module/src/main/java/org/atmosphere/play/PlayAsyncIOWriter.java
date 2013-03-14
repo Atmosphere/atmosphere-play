@@ -16,17 +16,18 @@
 package org.atmosphere.play;
 
 import org.atmosphere.cpr.AsyncIOWriter;
+import org.atmosphere.cpr.AsynchronousProcessor;
 import org.atmosphere.cpr.AtmosphereConfig;
 import org.atmosphere.cpr.AtmosphereInterceptorWriter;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResponse;
+import org.atmosphere.cpr.FrameworkConfig;
 import org.atmosphere.util.ByteArrayAsyncWriter;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.api.mvc.Codec;
 import play.core.j.JavaResults;
+import play.libs.F;
 import play.mvc.Http;
 import play.mvc.Results;
 
@@ -34,52 +35,54 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements PlayInternal<Results.Chunks>{
+public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements PlayInternal<Results.Chunks> {
     private static final Logger logger = LoggerFactory.getLogger(PlayAsyncIOWriter.class);
 
     private final AtomicInteger pendingWrite = new AtomicInteger();
     private final AtomicBoolean asyncClose = new AtomicBoolean(false);
-    private boolean resumeOnBroadcast = false;
     private boolean byteWritten = false;
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
     private long lastWrite = 0;
     private final ByteArrayAsyncWriter buffer = new ByteArrayAsyncWriter();
     protected Results.Chunks<String> chunks;
     protected Results.Chunks.Out<String> out;
+    private boolean resumeOnBroadcast;
 
     public PlayAsyncIOWriter(final AtmosphereConfig config, final Http.Request request) {
         chunks = new Results.Chunks<String>(JavaResults.writeString(Codec.utf_8()), JavaResults.contentTypeOfString((Codec.utf_8()))) {
             @Override
             public void onReady(Results.Chunks.Out<String> oout) {
                 out = oout;
-//                out.onDisconnected(new F.Callback0() {
-//                    @Override
-//                    public void invoke() throws Throwable {
-//                        onClose();
-//                    }
-//                });
+                boolean keepAlive = false;
 
-                AtmosphereRequest r = null;
                 try {
-                    r = AtmosphereUtils.request(request);
-                } catch (Throwable t) {
-                    logger.error("",t);
-                }
+                    final AtmosphereRequest r = AtmosphereUtils.request(request);
+                    out.onDisconnected(new F.Callback0() {
+                        @Override
+                        public void invoke() throws Throwable {
+                            _close(r);
+                        }
+                    });
 
-                AtmosphereResponse res = new AtmosphereResponse.Builder()
-                        .asyncIOWriter(PlayAsyncIOWriter.this)
-                        .writeHeader(false)
-                        .request(r).build();
-                try {
-                    config.framework().doCometSupport(r, res);
+                    AtmosphereResponse res = new AtmosphereResponse.Builder()
+                            .asyncIOWriter(PlayAsyncIOWriter.this)
+                            .writeHeader(false)
+                            .request(r).build();
+
+                    keepAlive = AtmosphereCoordinator.instance().route(r, res);
                 } catch (Throwable e) {
                     logger.error("", e);
+                    keepAlive = true;
+                } finally {
+                    if (!keepAlive) {
+                        out.close();
+                    }
                 }
             }
         };
     }
 
-    public Results.Chunks internal(){
+    public Results.Chunks internal() {
         return chunks;
     }
 
@@ -132,8 +135,8 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
     }
 
     @Override
-    public AsyncIOWriter write(AtmosphereResponse r, byte[] data, int offset, int length) throws IOException {
-
+    public AsyncIOWriter write(final AtmosphereResponse r, byte[] data, int offset, int length) throws IOException {
+        logger.trace("Writing {}", r.resource().uuid());
         boolean transform = filters.size() > 0 && r.getStatus() < 400;
         if (transform) {
             data = transform(r, data, offset, length);
@@ -141,13 +144,26 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
             length = data.length;
         }
 
-        final ChannelBuffer buffer = ChannelBuffers.dynamicBuffer();
         pendingWrite.incrementAndGet();
 
         out.write(new String(data, offset, length, r.getCharacterEncoding()));
         byteWritten = true;
         lastWrite = System.currentTimeMillis();
+        if (resumeOnBroadcast) {
+            out.close();
+            _close(r.request());
+        }
         return this;
+    }
+
+    private void _close(AtmosphereRequest request){
+        final AsynchronousProcessor.AsynchronousProcessorHook hook = (AsynchronousProcessor.AsynchronousProcessorHook)
+               request.getAttribute(FrameworkConfig.ASYNCHRONOUS_HOOK);
+        if (hook != null) {
+            hook.closed();
+        } else {
+            logger.error("Unable to close properly {}", request.resource().uuid());
+        }
     }
 
     public long lastTick() {
