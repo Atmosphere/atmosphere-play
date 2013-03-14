@@ -116,6 +116,7 @@
     <modules>
         <module>module</module>
         <module>samples/chat/</module>
+        <module>samples/jersey/</module>
     </modules>
 
     <build>

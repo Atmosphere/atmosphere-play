@@ -65,6 +65,7 @@ public class PlayWebSocket extends org.atmosphere.websocket.WebSocket implements
                 } catch (Throwable t) {
                     logger.error("", t);
                 }
+
                 try {
                     webSocketProcessor.open(PlayWebSocket.this, r, AtmosphereResponse.newInstance(config, r, PlayWebSocket.this));
                 } catch (IOException e) {

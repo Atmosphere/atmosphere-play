@@ -20,7 +20,7 @@ import play.GlobalSettings;
 import play.api.mvc.Handler;
 import play.mvc.Http.RequestHeader;
 import org.atmosphere.play.Router;
-import org.atmosphere.samples.play.Chat;
+import org.atmosphere.samples.play.ChatResource;
 
 import static org.atmosphere.play.AtmosphereCoordinator.*;
 
@@ -28,7 +28,7 @@ public class Global extends GlobalSettings {
 
     @Override
     public void onStart(Application application) {
-        instance().discover(Chat.class).ready();
+        instance().path("/chat").discover(ChatResource.class).ready();
     }
 
     @Override

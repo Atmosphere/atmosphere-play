@@ -17,12 +17,14 @@ package org.atmosphere.play;
 
 import org.atmosphere.container.NettyCometSupport;
 import org.atmosphere.cpr.Action;
+import org.atmosphere.cpr.ApplicationConfig;
 import org.atmosphere.cpr.AsynchronousProcessor;
 import org.atmosphere.cpr.AtmosphereFramework;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResponse;
 import org.atmosphere.cpr.FrameworkConfig;
 import org.atmosphere.cpr.HeaderConfig;
+import org.atmosphere.util.EndpointMapper;
 import org.atmosphere.util.ExecutorsFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,11 +43,13 @@ public class AtmosphereCoordinator {
     private final AtmosphereFramework framework;
     public final static AtmosphereCoordinator instance = new AtmosphereCoordinator();
     private final ScheduledExecutorService suspendTimer;
+    private final EndpointMapper<AtmosphereFramework.AtmosphereHandlerWrapper> mapper;
 
     private AtmosphereCoordinator() {
         framework = new AtmosphereFramework();
         framework.setAsyncSupport(new NettyCometSupport(framework().getAtmosphereConfig()));
         suspendTimer = ExecutorsFactory.getScheduler(framework.getAtmosphereConfig());
+        mapper = framework.endPointMapper();
     }
 
     public AtmosphereCoordinator discover(Class<?> clazz) {
@@ -54,17 +58,18 @@ public class AtmosphereCoordinator {
     }
 
     public AtmosphereCoordinator ready() {
+        framework().addInitParameter(ApplicationConfig.ALLOW_QUERYSTRING_AS_REQUEST, "false");
         framework().init();
         return this;
     }
 
     public boolean matchPath(String path) {
-        for (String s : framework().getAtmosphereHandlers().keySet()) {
-            if (path.equals(s)) {
-                return true;
-            }
-        }
-        return false;
+        return mapper.map(path, framework().getAtmosphereHandlers()) == null ? false : true;
+    }
+
+    public AtmosphereCoordinator path(String mappingPath){
+        framework.addInitParameter(ApplicationConfig.ATMOSPHERE_HANDLER_MAPPING, mappingPath);
+        return this;
     }
 
     public AtmosphereCoordinator shutdown() {

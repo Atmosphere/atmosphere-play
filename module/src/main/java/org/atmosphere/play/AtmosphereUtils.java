@@ -72,7 +72,7 @@ public class AtmosphereUtils {
         URI uri = URI.create(request.remoteAddress());
         AtmosphereRequest.Builder requestBuilder = new AtmosphereRequest.Builder();
         AtmosphereRequest r = requestBuilder.requestURI(url.substring(l))
-                .requestURL(url)
+                .requestURL(u)
                 .pathInfo(url.substring(l))
                 .headers(getHeaders(request))
                 .method(method)

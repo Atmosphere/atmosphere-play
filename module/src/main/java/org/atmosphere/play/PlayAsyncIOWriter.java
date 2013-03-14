@@ -113,6 +113,7 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
 //        }
 
         // TODO: Set status
+        logger.error("Error {}:{}", errorCode, message);
         out.write(message);
         return this;
     }
