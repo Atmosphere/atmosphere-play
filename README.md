@@ -4,6 +4,10 @@ This project brings the [Atmosphere Framework](https://github.com/Atmosphere/atm
 
 Official release soon with more samples!
 
+## Try it!
+
+Fork the workspace and go under samples/chat or samples/jersey, or download the sample's binaries [Chat](https://oss.sonatype.org/content/repositories/snapshots/org/atmosphere/samples/atmosphere-play-chat/1.0.0-SNAPSHOT/) [Jersey](https://oss.sonatype.org/content/repositories/snapshots/org/atmosphere/samples/atmosphere-play-jersey/1.0.0-SNAPSHOT/), unzip and do ./start
+
 ## WebSockets, Server Side Events, Streaming and Long-Polling transparently supported!
 
 Server side using atmosphere-runtime
@@ -87,8 +91,4 @@ and on the client side,
 
                 subSocket = socket.subscribe(request);
 ```
-
-### Try it!
-
-Fork the workspace and go under samples/chat or samples/jersey, or download the sample's binaries [Chat](https://oss.sonatype.org/content/repositories/snapshots/org/atmosphere/samples/atmosphere-play-chat/1.0.0-SNAPSHOT/) [Jersey](https://oss.sonatype.org/content/repositories/snapshots/org/atmosphere/samples/atmosphere-play-jersey/1.0.0-SNAPSHOT/)
 
