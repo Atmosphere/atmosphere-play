@@ -6,7 +6,23 @@ Official release soon with more samples!
 
 ## Try it!
 
-Fork the workspace and go under samples/chat or samples/jersey, or download the sample's binaries [Chat](https://oss.sonatype.org/content/repositories/snapshots/org/atmosphere/samples/atmosphere-play-chat/1.0.0-SNAPSHOT/) [Jersey](https://oss.sonatype.org/content/repositories/snapshots/org/atmosphere/samples/atmosphere-play-jersey/1.0.0-SNAPSHOT/), unzip and do ./start
+Fork the workspace and go under samples/chat or samples/jersey, or download the sample's binaries [Chat]() [Jersey](http://search.maven.org/#search%7Cga%7C1%7Catmosphere-play)
+
+```bash
+   % unzip atmosphere-play-<name>-.zip
+   % chmod a+x ./start
+   % ./start
+```
+
+Download [Atmosphere Play!](http://search.maven.org/#search%7Cga%7C1%7Catmosphere-play) or use Maven
+
+```xml
+     <dependency>
+         <groupId>org.atmosphere</groupId>
+         <artifactId>atmosphere-play</artifactId>
+         <version>1.0.0.beta1</version>
+     </dependency>
+```
 
 ## WebSockets, Server Side Events, Streaming and Long-Polling transparently supported!
 
