@@ -17,6 +17,8 @@ package org.atmosphere.play;
 
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.mvc.Http;
 
 import java.io.ByteArrayInputStream;
@@ -25,6 +27,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AtmosphereUtils {
+
+    private static Logger logger = LoggerFactory.getLogger(AtmosphereUtils.class);
 
     public final static AtmosphereRequest request(final Http.Request request) throws Throwable {
         final String base = getBaseUri(request);
@@ -69,7 +73,16 @@ public class AtmosphereUtils {
             }
         }
 
-        URI uri = URI.create(request.remoteAddress());
+        URI uri = null;
+        try {
+            URI.create(request.remoteAddress());
+        } catch (IllegalArgumentException e) {
+            logger.trace("", e);
+        }
+
+        int port = uri == null ? 0 : uri.getPort();
+        String uriString = uri == null ? request.remoteAddress() : uri.toString();
+        String host = uri == null ? request.remoteAddress() : uri.getHost();
         AtmosphereRequest.Builder requestBuilder = new AtmosphereRequest.Builder();
         AtmosphereRequest r = requestBuilder.requestURI(url.substring(l))
                 .requestURL(u)
@@ -81,9 +94,9 @@ public class AtmosphereUtils {
                 .attributes(attributes)
                 .servletPath("")
                 .queryStrings(qs)
-                .remotePort(uri.getPort())
-                .remoteAddr(uri.toString())
-                .remoteHost(uri.getHost())
+                .remotePort(port)
+                .remoteAddr(uriString)
+                .remoteHost(host)
                         //                .localPort(((InetSocketAddress) ctx.getChannel().getLocalAddress()).getPort())
                         //                .localAddr(((InetSocketAddress) ctx.getChannel().getLocalAddress()).getAddress().getHostAddress())
                         //                .localName(((InetSocketAddress) ctx.getChannel().getLocalAddress()).getHostName())
