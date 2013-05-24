@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
@@ -46,14 +47,14 @@
         <dependencies>
             <dependency>
                 <groupId>play</groupId>
-                <artifactId>play_2.9.1</artifactId>
-                <version>2.0.4</version>
+                <artifactId>play_2.10</artifactId>
+                <version>2.1.1</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.atmosphere</groupId>
                 <artifactId>atmosphere-play</artifactId>
-                <version>${pom.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.atmosphere</groupId>
@@ -77,17 +78,17 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.6.4</version>
+                <version>1.7.5</version>
             </dependency>
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-core</artifactId>
-                <version>1.0.0</version>
+                <version>1.0.13</version>
             </dependency>
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
-                <version>1.0.0</version>
+                <version>1.0.13</version>
             </dependency>
             <dependency>
                 <groupId>javax.servlet</groupId>
@@ -243,7 +244,7 @@
                         <link>http://docs.oracle.com/javaee/6/docs/api/</link>
                         <link>http://docs.oracle.com/javase/6/docs/api/</link>
                     </links>
-                    <excludePackageNames />
+                    <excludePackageNames/>
                 </configuration>
             </plugin>
             <plugin>
@@ -299,7 +300,7 @@
         <surefire.redirectTestOutputToFile>false</surefire.redirectTestOutputToFile>
         <source.property>1.6</source.property>
         <target.property>1.6</target.property>
-        <atmosphere.version>1.1.0.RC1</atmosphere.version>
+        <atmosphere.version>1.1.0.RC2</atmosphere.version>
     </properties>
 </project>
 

@@ -15,14 +15,7 @@
  */
 package org.atmosphere.play;
 
-import org.atmosphere.cpr.AsyncIOWriter;
-import org.atmosphere.cpr.AsynchronousProcessor;
-import org.atmosphere.cpr.AtmosphereConfig;
-import org.atmosphere.cpr.AtmosphereInterceptorWriter;
-import org.atmosphere.cpr.AtmosphereRequest;
-import org.atmosphere.cpr.AtmosphereResponse;
-import org.atmosphere.cpr.FrameworkConfig;
-import org.atmosphere.cpr.HeaderConfig;
+import org.atmosphere.cpr.*;
 import org.atmosphere.util.ByteArrayAsyncWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,19 +31,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements PlayInternal<Results.Chunks> {
     private static final Logger logger = LoggerFactory.getLogger(PlayAsyncIOWriter.class);
-
     private final AtomicInteger pendingWrite = new AtomicInteger();
     private final AtomicBoolean asyncClose = new AtomicBoolean(false);
-    private boolean byteWritten = false;
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
-    private long lastWrite = 0;
     private final ByteArrayAsyncWriter buffer = new ByteArrayAsyncWriter();
     protected Results.Chunks<String> chunks;
     protected Results.Chunks.Out<String> out;
+    private boolean byteWritten = false;
+    private long lastWrite = 0;
     private boolean resumeOnBroadcast;
 
     public PlayAsyncIOWriter(final Http.Request request, final Http.Response response) {
-        chunks = new Results.Chunks<String>(JavaResults.writeString(Codec.utf_8()), JavaResults.contentTypeOfString((Codec.utf_8()))) {
+        chunks = new Results.Chunks<String>(JavaResults.writeString(Codec.utf_8())) {
             @Override
             public void onReady(Results.Chunks.Out<String> oout) {
                 out = oout;
@@ -88,7 +80,6 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
             response.setContentType("text/event-stream");
         }
     }
-
 
     public Results.Chunks internal() {
         return chunks;
@@ -165,9 +156,9 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
         return this;
     }
 
-    private void _close(AtmosphereRequest request){
+    private void _close(AtmosphereRequest request) {
         final AsynchronousProcessor.AsynchronousProcessorHook hook = (AsynchronousProcessor.AsynchronousProcessorHook)
-               request.getAttribute(FrameworkConfig.ASYNCHRONOUS_HOOK);
+                request.getAttribute(FrameworkConfig.ASYNCHRONOUS_HOOK);
         if (hook != null) {
             hook.closed();
         } else {
