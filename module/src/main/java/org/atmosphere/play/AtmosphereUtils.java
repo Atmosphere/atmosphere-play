@@ -68,6 +68,9 @@ public class AtmosphereUtils {
                 body = request.body().asRaw().asBytes();
             } else if (request.body().asJson() != null) {
                 body = request.body().asJson().asText().getBytes("utf-8");
+                if (body.length == 0) {
+                    body = request.body().asJson().toString().getBytes("utf-8");
+                }
             } else if (request.body().asXml() != null) {
                 body = request.body().asXml().getTextContent().getBytes("utf-8");
             }
