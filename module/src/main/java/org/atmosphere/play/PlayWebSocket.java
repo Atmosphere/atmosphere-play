@@ -98,20 +98,6 @@ public class PlayWebSocket extends org.atmosphere.websocket.WebSocket implements
      * {@inheritDoc}
      */
     @Override
-    public org.atmosphere.websocket.WebSocket write(AtmosphereResponse r, byte[] data) throws IOException {
-        firstWrite.set(true);
-        if (!isOpen()) throw new IOException("Connection remotely closed");
-
-        logger.trace("WebSocket.write()");
-        out.write(new String(data, "UTF-8"));
-        lastWrite = System.currentTimeMillis();
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public org.atmosphere.websocket.WebSocket write(byte[] data, int offset, int length) throws IOException {
         firstWrite.set(true);
         if (!isOpen()) throw new IOException("Connection remotely closed");

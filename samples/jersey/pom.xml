@@ -23,24 +23,20 @@
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
         </dependency>
         <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-json</artifactId>
-            <version>1.14</version>
+            <version>1.17</version>
         </dependency>
     </dependencies>
     <build>
         <plugins>
             <plugin>
-                <groupId>de.akquinet.innovation.play2</groupId>
+                <groupId>org.nanoko.playframework</groupId>
                 <artifactId>play2-maven-plugin</artifactId>
-                <version>1.2.1</version>
+                <version>1.2.2</version>
                 <extensions>true</extensions>
             </plugin>
         </plugins>

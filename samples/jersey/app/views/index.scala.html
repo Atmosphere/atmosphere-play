@@ -7,7 +7,7 @@
         <!-- Atmosphere -->
         <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.0.js"></script>
         <!-- Application -->
-        <script type="text/javascript" src="https://raw.github.com/Atmosphere/atmosphere/master/modules/jquery/src/main/webapp/jquery/jquery.atmosphere.js"></script>
+        <script type="text/javascript" src="https://rawgithub.com/Atmosphere/atmosphere/master/modules/jquery/src/main/webapp/jquery/jquery.atmosphere.js"></script>
 		<script type="text/javascript">
             $(function () {
                 "use strict";
@@ -21,15 +21,14 @@
                 var logged = false;
                 var socket = $.atmosphere;
                 var subSocket;
-                var transport = 'sse';
+                var transport = 'websocket';
 
                 // We are now ready to cut the request
                 var request = { url: document.location.toString() + 'chat',
                     contentType : "application/json",
                     logLevel : 'debug',
                     transport : transport ,
-                    trackMessageLength : true,
-                    fallbackTransport: 'websocket'};
+                    fallbackTransport: 'sse'};
 
 
                 request.onOpen = function(response) {
@@ -65,7 +64,7 @@
                     } else {
                         var me = json.author == author;
                         var date = typeof(json.time) == 'string' ? parseInt(json.time) : json.time;
-                        addMessage(json.author, json.message, me ? 'blue' : 'black', new Date(date));
+                        addMessage(json.author, json.text, me ? 'blue' : 'black', new Date(date));
                     }
                 };
 
