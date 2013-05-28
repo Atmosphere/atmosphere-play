@@ -26,10 +26,12 @@ import org.atmosphere.cpr.FrameworkConfig;
 import org.atmosphere.cpr.HeaderConfig;
 import org.atmosphere.util.EndpointMapper;
 import org.atmosphere.util.ExecutorsFactory;
+import org.atmosphere.util.ServletProxyFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -59,6 +61,13 @@ public class AtmosphereCoordinator {
 
     public AtmosphereCoordinator ready() {
         framework().addInitParameter(ApplicationConfig.ALLOW_QUERYSTRING_AS_REQUEST, "false");
+
+        ServletProxyFactory.getDefault().addMethodHandler("getServerInfo", new ServletProxyFactory.MethodHandler() {
+            @Override
+            public Object handle(Object clazz, Method method, Object[] methodObjects) {
+                return "Playosphere/1.0.0";
+            }
+        });
         framework().init();
         return this;
     }
