@@ -24,6 +24,10 @@ Download [Atmosphere Play!](http://search.maven.org/#search%7Cga%7C1%7Catmospher
      </dependency>
 ```
 
+## Join the growing community
+
+If you are interested, subscribe to our [mailing list](http://groups.google.com/group/atmosphere-framework) for more info!  We are on irc.freenode.net under #atmosphere-comet
+
 ## WebSockets, Server Side Events, Streaming and Long-Polling transparently supported!
 
 Server side using atmosphere-runtime
@@ -138,4 +142,6 @@ and on the client side,
 
         subSocket = socket.subscribe(request);
 ```
+
+[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/61ce12ae5ad452efed81c066acf7a628 "githalytics.com")](http://githalytics.com/Atmosphere/atmosphere-play)
 
