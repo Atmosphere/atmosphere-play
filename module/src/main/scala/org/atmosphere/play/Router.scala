@@ -58,4 +58,33 @@ object Router {
     }
 
   }
+
+  import play.api.mvc.{RequestHeader=>ScalaRequestHeader}
+ 
+  def dispatch(request: ScalaRequestHeader): Option[Handler] = {
+    if (!AtmosphereCoordinator.instance().matchPath(request.path)) {
+      None
+    } else {
+      val c = classOf[AtmosphereController]
+      val a = new AtmosphereController
+
+      // Netty fail to decode headers separated by a ','
+      val connectionH = request.headers.get("Connection")
+      val webSocketH = request.headers.get("Upgrade")
+      val wsSupported = webSocketH.isDefined || connectionH.map(_.toLowerCase.contains("upgrade")).getOrElse(false)
+
+      if (wsSupported) {
+        Some(JavaWebSocket.ofString(a.webSocket))
+      } else {
+        Some(new JavaAction {
+          def invocation = a.http
+
+          val controller = c
+          lazy val method = MethodUtils.getMatchingAccessibleMethod(controller, "http")
+        }
+        )
+      }
+    }
+  }
+
 }
