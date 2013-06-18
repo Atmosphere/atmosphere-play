@@ -97,7 +97,6 @@ public class AtmosphereCoordinator {
     public boolean route(AtmosphereRequest request, AtmosphereResponse response) throws IOException {
         boolean resumeOnBroadcast = false;
         boolean keptOpen = true;
-        boolean skipClose = false;
         final PlayAsyncIOWriter w = PlayAsyncIOWriter.class.cast(response.getAsyncIOWriter());
 
         try {
@@ -133,19 +132,10 @@ public class AtmosphereCoordinator {
                         }
                     }
                 }, action.timeout(), action.timeout(), TimeUnit.MILLISECONDS));
-            } else if (action != null && action.type() == Action.TYPE.RESUME) {
-                resumeOnBroadcast = false;
             }
-            w.resumeOnBroadcast(resumeOnBroadcast);
         } catch (Throwable e) {
             logger.error("Unable to process request", e);
             keptOpen = false;
-        } finally {
-            if (w != null && !resumeOnBroadcast && !keptOpen) {
-                if (!skipClose) {
-                    w.close((AtmosphereResponse) null);
-                }
-            }
         }
         return keptOpen;
     }

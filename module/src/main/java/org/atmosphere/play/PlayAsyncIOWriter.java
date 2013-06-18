@@ -67,7 +67,7 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
                             .asyncIOWriter(PlayAsyncIOWriter.this)
                             .writeHeader(false)
                             .request(r).build();
-                    keepAlive = AtmosphereCoordinator.instance().route(r, res);
+                    AtmosphereCoordinator.instance().route(r, res);
                 } catch (Throwable e) {
                     logger.error("", e);
                     keepAlive = true;
@@ -93,14 +93,6 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
 
     public boolean isClosed() {
         return isClosed.get();
-    }
-
-    public boolean byteWritten() {
-        return byteWritten;
-    }
-
-    public void resumeOnBroadcast(boolean resumeOnBroadcast) {
-        this.resumeOnBroadcast = resumeOnBroadcast;
     }
 
     @Override
