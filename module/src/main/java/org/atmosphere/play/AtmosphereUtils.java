@@ -130,7 +130,7 @@ public class AtmosphereUtils {
         final Map<String, String> headers = new HashMap<String, String>();
 
         for (Map.Entry<String, String[]> e : request.headers().entrySet()) {
-            headers.put(e.getKey(), e.getValue()[0]);
+            headers.put(e.getKey().toLowerCase(), e.getValue()[0]);
         }
 
         return headers;
