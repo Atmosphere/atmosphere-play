@@ -109,7 +109,7 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
 
     @Override
     public AsyncIOWriter write(AtmosphereResponse r, String data) throws IOException {
-        byte[] b = data.getBytes("ISO-8859-1");
+        byte[] b = data.getBytes(r.getCharacterEncoding());
         write(r, b);
         return this;
     }
