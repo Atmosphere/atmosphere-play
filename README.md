@@ -1,4 +1,4 @@
-## Atmosphere for Play!
+## Playtosphere: Atmosphere for Play!
 
 This project brings the [Atmosphere Framework](https://github.com/Atmosphere/atmosphere) to the [Play!](http://www.playframework.com/) Framework. It support ALL Atmosphere's modules like Runtime, Jersey and Socket.IO.
 
