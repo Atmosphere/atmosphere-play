@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Atmosphere-play : Atmosphere Framework for Play!" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Atmosphere-play</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/Atmosphere/atmosphere-play">View on GitHub</a>
+
+          <h1 id="project_title">Atmosphere-play</h1>
+          <h2 id="project_tagline">Atmosphere Framework for Play!</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/Atmosphere/atmosphere-play/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/Atmosphere/atmosphere-play/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h2>
+<a name="atmosphere-for-play" class="anchor" href="#atmosphere-for-play"><span class="octicon octicon-link"></span></a>Atmosphere for Play!</h2>
+
+<p>This project brings the <a href="https://github.com/Atmosphere/atmosphere">Atmosphere Framework</a> to the <a href="http://www.playframework.com/">Play!</a> Framework. It support ALL Atmosphere's modules like Runtime, Jersey and Socket.IO.</p>
+
+<p>Official release soon with more samples!</p>
+
+<h2>
+<a name="try-it" class="anchor" href="#try-it"><span class="octicon octicon-link"></span></a>Try it!</h2>
+
+<p>Fork the workspace and go under samples/chat or samples/jersey, or download the sample's binaries <a href="">Chat</a> <a href="http://search.maven.org/#search%7Cga%7C1%7Catmosphere-play">Jersey</a></p>
+
+<div class="highlight highlight-bash"><pre>   % unzip atmosphere-play-&lt;name&gt;-.zip
+   % chmod a+x ./start
+   % ./start
+</pre></div>
+
+<p>Download <a href="http://search.maven.org/#search%7Cga%7C1%7Catmosphere-play">Atmosphere Play!</a> or use Maven</p>
+
+<div class="highlight highlight-xml"><pre>     <span class="nt">&lt;dependency&gt;</span>
+         <span class="nt">&lt;groupId&gt;</span>org.atmosphere<span class="nt">&lt;/groupId&gt;</span>
+         <span class="nt">&lt;artifactId&gt;</span>atmosphere-play<span class="nt">&lt;/artifactId&gt;</span>
+         <span class="nt">&lt;version&gt;</span>1.0.0.RC1<span class="nt">&lt;/version&gt;</span>
+     <span class="nt">&lt;/dependency&gt;</span>
+</pre></div>
+
+<h2>
+<a name="join-the-growing-community" class="anchor" href="#join-the-growing-community"><span class="octicon octicon-link"></span></a>Join the growing community</h2>
+
+<p>If you are interested, subscribe to our <a href="http://groups.google.com/group/atmosphere-framework">mailing list</a> for more info!  We are on irc.freenode.net under #atmosphere-comet</p>
+
+<h2>
+<a name="websockets-server-side-events-streaming-and-long-polling-transparently-supported" class="anchor" href="#websockets-server-side-events-streaming-and-long-polling-transparently-supported"><span class="octicon octicon-link"></span></a>WebSockets, Server Side Events, Streaming and Long-Polling transparently supported!</h2>
+
+<p>Server side using atmosphere-runtime</p>
+
+<div class="highlight highlight-java"><pre><span class="nd">@ManagedService</span><span class="o">(</span><span class="n">path</span> <span class="o">=</span> <span class="s">"/chat"</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Chat</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Logger</span> <span class="n">logger</span> <span class="o">=</span> <span class="n">LoggerFactory</span><span class="o">.</span><span class="na">getLogger</span><span class="o">(</span><span class="n">Chat</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * Invoked when the connection as been fully established and suspended, e.g ready for receiving messages.</span>
+<span class="cm">     *</span>
+<span class="cm">     * @param r</span>
+<span class="cm">     */</span>
+    <span class="nd">@Ready</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onReady</span><span class="o">(</span><span class="kd">final</span> <span class="n">AtmosphereResource</span> <span class="n">r</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">logger</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">"Browser {} connected."</span><span class="o">,</span> <span class="n">r</span><span class="o">.</span><span class="na">uuid</span><span class="o">());</span>
+    <span class="o">}</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * Invoked when the client disconnect or when an unexpected closing of the underlying connection happens.</span>
+<span class="cm">     *</span>
+<span class="cm">     * @param event</span>
+<span class="cm">     */</span>
+    <span class="nd">@Disconnect</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onDisconnect</span><span class="o">(</span><span class="n">AtmosphereResourceEvent</span> <span class="n">event</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">event</span><span class="o">.</span><span class="na">isCancelled</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">logger</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">"Browser {} unexpectedly disconnected"</span><span class="o">,</span> <span class="n">event</span><span class="o">.</span><span class="na">getResource</span><span class="o">().</span><span class="na">uuid</span><span class="o">());</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">event</span><span class="o">.</span><span class="na">isClosedByClient</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">logger</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">"Browser {} closed the connection"</span><span class="o">,</span> <span class="n">event</span><span class="o">.</span><span class="na">getResource</span><span class="o">().</span><span class="na">uuid</span><span class="o">());</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * Simple annotated class that demonstrate how {@link org.atmosphere.config.managed.Encoder} and {@link org.atmosphere.config.managed.Decoder</span>
+<span class="cm">     * can be used.</span>
+<span class="cm">     *</span>
+<span class="cm">     * @param message an instance of {@link Message}</span>
+<span class="cm">     * @return</span>
+<span class="cm">     * @throws IOException</span>
+<span class="cm">     */</span>
+    <span class="nd">@org.atmosphere.config.service.Message</span><span class="o">(</span><span class="n">encoders</span> <span class="o">=</span> <span class="o">{</span><span class="n">JacksonEncoder</span><span class="o">.</span><span class="na">class</span><span class="o">},</span> <span class="n">decoders</span> <span class="o">=</span> <span class="o">{</span><span class="n">JacksonDecoder</span><span class="o">.</span><span class="na">class</span><span class="o">})</span>
+    <span class="kd">public</span> <span class="n">Message</span> <span class="nf">onMessage</span><span class="o">(</span><span class="n">Message</span> <span class="n">message</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+        <span class="n">logger</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">"{} just send {}"</span><span class="o">,</span> <span class="n">message</span><span class="o">.</span><span class="na">getAuthor</span><span class="o">(),</span> <span class="n">message</span><span class="o">.</span><span class="na">getMessage</span><span class="o">());</span>
+        <span class="k">return</span> <span class="n">message</span><span class="o">;</span>
+    <span class="o">}</span>
+</pre></div>
+
+<p>Server side using atmosphere-jersey</p>
+
+<div class="highlight highlight-java"><pre> <span class="nd">@Path</span><span class="o">(</span><span class="s">"/chat"</span><span class="o">)</span>
+ <span class="kd">public</span> <span class="kd">class</span> <span class="nc">ChatResource</span> <span class="o">{</span>
+
+     <span class="cm">/**</span>
+<span class="cm">      * Suspend the response without writing anything back to the client.</span>
+<span class="cm">      * @return a white space</span>
+<span class="cm">      */</span>
+     <span class="nd">@Suspend</span><span class="o">(</span><span class="n">contentType</span> <span class="o">=</span> <span class="s">"application/json"</span><span class="o">)</span>
+     <span class="nd">@GET</span>
+     <span class="kd">public</span> <span class="n">String</span> <span class="nf">suspend</span><span class="o">()</span> <span class="o">{</span>
+         <span class="k">return</span> <span class="s">""</span><span class="o">;</span>
+     <span class="o">}</span>
+
+     <span class="cm">/**</span>
+<span class="cm">      * Broadcast the received message object to all suspended response. Do not write back the message to the calling connection.</span>
+<span class="cm">      * @param message a {@link Message}</span>
+<span class="cm">      * @return a {@link Response}</span>
+<span class="cm">      */</span>
+     <span class="nd">@Broadcast</span><span class="o">(</span><span class="n">writeEntity</span> <span class="o">=</span> <span class="kc">false</span><span class="o">)</span>
+     <span class="nd">@POST</span>
+     <span class="nd">@Produces</span><span class="o">(</span><span class="s">"application/json"</span><span class="o">)</span>
+     <span class="kd">public</span> <span class="n">Response</span> <span class="nf">broadcast</span><span class="o">(</span><span class="n">Message</span> <span class="n">message</span><span class="o">)</span> <span class="o">{</span>
+         <span class="k">return</span> <span class="k">new</span> <span class="nf">Response</span><span class="o">(</span><span class="n">message</span><span class="o">.</span><span class="na">getAuthor</span><span class="o">(),</span> <span class="n">message</span><span class="o">.</span><span class="na">getMessage</span><span class="o">());</span>
+     <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>and on the client side,</p>
+
+<div class="highlight highlight-js"><pre>    <span class="nx">$</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="s2">"use strict"</span><span class="p">;</span>
+
+        <span class="kd">var</span> <span class="nx">header</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'#header'</span><span class="p">);</span>
+        <span class="kd">var</span> <span class="nx">content</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'#content'</span><span class="p">);</span>
+        <span class="kd">var</span> <span class="nx">input</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'#input'</span><span class="p">);</span>
+        <span class="kd">var</span> <span class="nx">status</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'#status'</span><span class="p">);</span>
+        <span class="kd">var</span> <span class="nx">myName</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+        <span class="kd">var</span> <span class="nx">author</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
+        <span class="kd">var</span> <span class="nx">logged</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+        <span class="kd">var</span> <span class="nx">socket</span> <span class="o">=</span> <span class="nx">$</span><span class="p">.</span><span class="nx">atmosphere</span><span class="p">;</span>
+        <span class="kd">var</span> <span class="nx">subSocket</span><span class="p">;</span>
+        <span class="kd">var</span> <span class="nx">transport</span> <span class="o">=</span> <span class="s1">'websocket'</span><span class="p">;</span>
+
+        <span class="c1">// We are now ready to cut the request</span>
+        <span class="kd">var</span> <span class="nx">request</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">url</span><span class="o">:</span> <span class="nb">document</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">toString</span><span class="p">()</span> <span class="o">+</span> <span class="s1">'chat'</span><span class="p">,</span>
+            <span class="nx">contentType</span> <span class="o">:</span> <span class="s2">"application/json"</span><span class="p">,</span>
+            <span class="nx">logLevel</span> <span class="o">:</span> <span class="s1">'debug'</span><span class="p">,</span>
+            <span class="nx">transport</span> <span class="o">:</span> <span class="nx">transport</span> <span class="p">,</span>
+            <span class="nx">trackMessageLength</span> <span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+            <span class="nx">fallbackTransport</span><span class="o">:</span> <span class="s1">'websocket'</span><span class="p">};</span>
+
+
+        <span class="nx">request</span><span class="p">.</span><span class="nx">onMessage</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+
+             <span class="c1">// do something</span>
+        <span class="p">};</span>
+
+        <span class="nx">request</span><span class="p">.</span><span class="nx">onClose</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+        <span class="p">};</span>
+
+        <span class="nx">request</span><span class="p">.</span><span class="nx">onError</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+        <span class="p">};</span>
+
+        <span class="nx">subSocket</span> <span class="o">=</span> <span class="nx">socket</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">request</span><span class="p">);</span>
+</pre></div>
+
+<p><a href="http://githalytics.com/Atmosphere/atmosphere-play"><img src="https://cruel-carlota.pagodabox.com/61ce12ae5ad452efed81c066acf7a628" alt="githalytics.com alpha" title="githalytics.com"></a></p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Atmosphere-play maintained by <a href="https://github.com/Atmosphere">Atmosphere</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-31990725-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+
+  </body>
+</html>
