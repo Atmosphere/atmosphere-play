@@ -20,7 +20,7 @@ Download [Atmosphere Play!](http://search.maven.org/#search%7Cga%7C1%7Catmospher
      <dependency>
          <groupId>org.atmosphere</groupId>
          <artifactId>atmosphere-play</artifactId>
-         <version>1.0.0.RC1</version>
+         <version>1.0.0.RC2</version>
      </dependency>
 ```
 
