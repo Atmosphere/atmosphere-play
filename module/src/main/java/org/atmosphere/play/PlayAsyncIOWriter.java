@@ -67,7 +67,7 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
                             .asyncIOWriter(PlayAsyncIOWriter.this)
                             .writeHeader(false)
                             .request(r).build();
-                    AtmosphereCoordinator.instance().route(r, res);
+                    keepAlive = AtmosphereCoordinator.instance().route(r, res);
                 } catch (Throwable e) {
                     logger.error("", e);
                     keepAlive = true;
@@ -95,6 +95,14 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
         return isClosed.get();
     }
 
+    public boolean byteWritten() {
+        return byteWritten;
+    }
+
+    public void resumeOnBroadcast(boolean resumeOnBroadcast) {
+        this.resumeOnBroadcast = resumeOnBroadcast;
+    }
+
     @Override
     public AsyncIOWriter writeError(AtmosphereResponse r, int errorCode, String message) throws IOException {
 //        if (!response.isOpen()) {
@@ -109,7 +117,7 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
 
     @Override
     public AsyncIOWriter write(AtmosphereResponse r, String data) throws IOException {
-        byte[] b = data.getBytes(r.getCharacterEncoding());
+        byte[] b = data.getBytes("ISO-8859-1");
         write(r, b);
         return this;
     }
