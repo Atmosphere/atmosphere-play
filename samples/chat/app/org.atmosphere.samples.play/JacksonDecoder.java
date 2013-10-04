@@ -16,7 +16,7 @@
 package org.atmosphere.samples.play;
 
 import org.atmosphere.config.managed.Decoder;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 

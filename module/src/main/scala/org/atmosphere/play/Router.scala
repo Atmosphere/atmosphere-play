@@ -18,7 +18,7 @@ package org.atmosphere.play
 import play.api.mvc.Handler
 import play.core.j._
 import play.mvc.Http.RequestHeader
-import org.apache.commons.lang3.reflect.MethodUtils
+import play.libs.F.Promise
 
 object Router {
 
@@ -50,10 +50,9 @@ object Router {
       JavaWebSocket.ofString(a.webSocket)
     } else {
       new JavaAction {
-        def invocation = a.http
-
-        val controller = c
-        lazy val method = MethodUtils.getMatchingAccessibleMethod(controller, "http")
+        val annotations = new JavaActionAnnotations(c, c.getMethod("http"))
+        val parser = annotations.parser
+        def invocation = Promise.pure(a.http)
       }
     }
 
@@ -77,10 +76,9 @@ object Router {
         Some(JavaWebSocket.ofString(a.webSocket))
       } else {
         Some(new JavaAction {
-          def invocation = a.http
-
-          val controller = c
-          lazy val method = MethodUtils.getMatchingAccessibleMethod(controller, "http")
+          val annotations = new JavaActionAnnotations(c, c.getMethod("http"))
+          val parser = annotations.parser
+          def invocation = Promise.pure(a.http)
         }
         )
       }
