@@ -163,10 +163,10 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
     }
 
     private void _close(AtmosphereRequest request) {
-        final AsynchronousProcessor.AsynchronousProcessorHook hook = (AsynchronousProcessor.AsynchronousProcessorHook)
-                request.getAttribute(FrameworkConfig.ASYNCHRONOUS_HOOK);
-        if (hook != null) {
-            hook.closed();
+        Object o = request.getAttribute(FrameworkConfig.ASYNCHRONOUS_HOOK);
+
+       if (o != null && AsynchronousProcessor.AsynchronousProcessorHook.class.isAssignableFrom(o.getClass())) {
+           AsynchronousProcessor.AsynchronousProcessorHook.class.cast(o).closed();
         } else {
             logger.error("Unable to close properly {}", request.resource().uuid());
         }
