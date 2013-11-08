@@ -16,11 +16,23 @@ Fork the workspace and go under samples/chat or samples/jersey, or download the 
 
 Download [Atmosphere Play!](http://search.maven.org/#search%7Cga%7C1%7Catmosphere-play) or use Maven
 
+For Play 2.2.x:
+
 ```xml
      <dependency>
          <groupId>org.atmosphere</groupId>
          <artifactId>atmosphere-play</artifactId>
          <version>1.2.0</version>
+     </dependency>
+```
+
+For Play 2.1.x:
+
+```xml
+     <dependency>
+         <groupId>org.atmosphere</groupId>
+         <artifactId>atmosphere-play</artifactId>
+         <version>1.0.0</version>
      </dependency>
 ```
 
