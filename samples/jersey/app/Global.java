@@ -13,6 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+import org.atmosphere.cpr.ApplicationConfig;
 import org.atmosphere.play.AtmosphereCoordinator;
 import play.Application;
 import play.GlobalSettings;
@@ -27,6 +28,7 @@ public class Global extends GlobalSettings {
 
     @Override
     public void onStart(Application application) {
+        instance().framework().addInitParameter(ApplicationConfig.WEBSOCKET_CONTENT_TYPE, "application/json");
         instance().path("/chat").discover(ChatResource.class).ready();
     }
 
