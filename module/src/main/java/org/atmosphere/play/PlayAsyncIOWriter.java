@@ -167,8 +167,6 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
 
        if (o != null && AsynchronousProcessor.AsynchronousProcessorHook.class.isAssignableFrom(o.getClass())) {
            AsynchronousProcessor.AsynchronousProcessorHook.class.cast(o).closed();
-        } else {
-            logger.error("Unable to close properly {}", request.resource().uuid());
         }
     }
 
