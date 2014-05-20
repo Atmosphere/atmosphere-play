@@ -34,7 +34,7 @@ object Router {
     val webSocketH = request.getHeader("Upgrade")
     var wsSupported = false;
 
-    if (webSocketH != null && webSocketH.equalsIgnoreCase(webSocketH)) {
+    if (webSocketH != null && webSocketH.equalsIgnoreCase("websocket")) {
       wsSupported = true
     }
 
