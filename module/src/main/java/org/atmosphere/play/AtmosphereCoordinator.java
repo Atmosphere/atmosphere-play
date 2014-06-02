@@ -21,6 +21,7 @@ import org.atmosphere.cpr.ApplicationConfig;
 import org.atmosphere.cpr.AsynchronousProcessor;
 import org.atmosphere.cpr.AtmosphereFramework;
 import org.atmosphere.cpr.AtmosphereRequest;
+import org.atmosphere.cpr.AtmosphereResourceImpl;
 import org.atmosphere.cpr.AtmosphereResponse;
 import org.atmosphere.cpr.FrameworkConfig;
 import org.atmosphere.cpr.HeaderConfig;
@@ -43,13 +44,15 @@ public class AtmosphereCoordinator {
     private static final Logger logger = LoggerFactory.getLogger(AtmosphereCoordinator.class);
 
     private final AtmosphereFramework framework;
+    private final AsynchronousProcessor asynchronousProcessor;
     public final static AtmosphereCoordinator instance = new AtmosphereCoordinator();
     private final ScheduledExecutorService suspendTimer;
     private final EndpointMapper<AtmosphereFramework.AtmosphereHandlerWrapper> mapper;
 
     private AtmosphereCoordinator() {
         framework = new AtmosphereFramework();
-        framework.setAsyncSupport(new NettyCometSupport(framework().getAtmosphereConfig()));
+        asynchronousProcessor = new NettyCometSupport(framework().getAtmosphereConfig());
+        framework.setAsyncSupport(asynchronousProcessor);
         suspendTimer = ExecutorsFactory.getScheduler(framework.getAtmosphereConfig());
         mapper = framework.endPointMapper();
     }
@@ -65,7 +68,7 @@ public class AtmosphereCoordinator {
         ServletProxyFactory.getDefault().addMethodHandler("getServerInfo", new ServletProxyFactory.MethodHandler() {
             @Override
             public Object handle(Object clazz, Method method, Object[] methodObjects) {
-                return "Playosphere/1.0.0";
+                return "Playtosphere/2.0.0";
             }
         });
         framework().init();
@@ -103,8 +106,7 @@ public class AtmosphereCoordinator {
         try {
 
             Action a = framework.doCometSupport(request, response);
-            final AsynchronousProcessor.AsynchronousProcessorHook hook = (AsynchronousProcessor.AsynchronousProcessorHook)
-                    request.getAttribute(FrameworkConfig.ASYNCHRONOUS_HOOK);
+            final AtmosphereResourceImpl impl = (AtmosphereResourceImpl) request.getAttribute(FrameworkConfig.ATMOSPHERE_RESOURCE);
 
             String transport = (String) request.getAttribute(FrameworkConfig.TRANSPORT_IN_USE);
             if (transport == null) {
@@ -128,7 +130,7 @@ public class AtmosphereCoordinator {
                     @Override
                     public void run() {
                         if (!w.isClosed() && (System.currentTimeMillis() - w.lastTick()) > action.timeout()) {
-                            hook.timedOut();
+                            asynchronousProcessor.endRequest(impl, false);
                             f.get().cancel(true);
                         }
                     }

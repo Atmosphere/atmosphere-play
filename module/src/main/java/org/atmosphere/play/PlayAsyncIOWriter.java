@@ -19,8 +19,8 @@ import org.atmosphere.cpr.AsyncIOWriter;
 import org.atmosphere.cpr.AsynchronousProcessor;
 import org.atmosphere.cpr.AtmosphereInterceptorWriter;
 import org.atmosphere.cpr.AtmosphereRequest;
+import org.atmosphere.cpr.AtmosphereResourceImpl;
 import org.atmosphere.cpr.AtmosphereResponse;
-import org.atmosphere.cpr.FrameworkConfig;
 import org.atmosphere.cpr.HeaderConfig;
 import org.atmosphere.util.ByteArrayAsyncWriter;
 import org.slf4j.Logger;
@@ -163,10 +163,9 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
     }
 
     private void _close(AtmosphereRequest request) {
-        Object o = request.getAttribute(FrameworkConfig.ASYNCHRONOUS_HOOK);
-
-        if (o != null && AsynchronousProcessor.AsynchronousProcessorHook.class.isAssignableFrom(o.getClass())) {
-            AsynchronousProcessor.AsynchronousProcessorHook.class.cast(o).closed();
+        AtmosphereResourceImpl r = AtmosphereResourceImpl.class.cast(request.resource());
+        if (request != null && r != null) {
+            AsynchronousProcessor.class.cast(r.getAtmosphereConfig().framework().getAsyncSupport()).endRequest(r, true);
         }
     }
 
