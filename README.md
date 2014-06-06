@@ -16,7 +16,7 @@ Fork the workspace and go under samples/chat or samples/jersey, or download the 
 
 Download [Atmosphere Play!](http://search.maven.org/#search%7Cga%7C1%7Catmosphere-play) or use Maven
 
-For Play 2.2.x:
+For Play 2.2.x+:
 
 ```xml
      <dependency>
@@ -25,6 +25,7 @@ For Play 2.2.x:
          <version>1.2.0</version>
      </dependency>
 ```
+or using [sbt](http://ntcoding.blogspot.ca/2013/09/atmosphere-scala-sbt-akka-step-by-step.html)
 
 For Play 2.1.x:
 
