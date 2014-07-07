@@ -30,7 +30,7 @@ public class AtmosphereUtils {
 
     private static Logger logger = LoggerFactory.getLogger(AtmosphereUtils.class);
 
-    public final static AtmosphereRequest request(final Http.Request request) throws Throwable {
+    public final static AtmosphereRequest request(final Http.Request request, final Map<String, Object> additionalAttributes) throws Throwable {
         final String base = getBaseUri(request);
         final URI requestUri = new URI(base.substring(0, base.length() - 1) + request.uri());
         String ct = "text/plain";
@@ -54,7 +54,7 @@ public class AtmosphereUtils {
         String url = u.substring(0, last);
         int l = requestUri.getAuthority().length() + requestUri.getScheme().length() + 3;
 
-        final Map<String, Object> attributes = new HashMap<String, Object>();
+        final Map<String, Object> attributes = new HashMap<String, Object>(additionalAttributes);
 
         boolean hasBody = request.body() != null;
         byte[] body = {};

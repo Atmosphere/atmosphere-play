@@ -43,6 +43,8 @@ import static org.atmosphere.cpr.HeaderConfig.X_ATMOSPHERE_TRANSPORT;
 public class AtmosphereCoordinator {
     private static final Logger logger = LoggerFactory.getLogger(AtmosphereCoordinator.class);
 
+    public final static String PLAY_SESSION_CONVERTER = "org.atmopshere.play.AtmospherePlaySessionConverter";
+
     private final AtmosphereFramework framework;
     private final AsynchronousProcessor asynchronousProcessor;
     public final static AtmosphereCoordinator instance = new AtmosphereCoordinator();
@@ -125,7 +127,7 @@ public class AtmosphereCoordinator {
 
             final Action action = (Action) request.getAttribute(NettyCometSupport.SUSPEND);
             if (action != null && action.type() == Action.TYPE.SUSPEND && action.timeout() != -1) {
-                final AtomicReference<Future<?>> f = new AtomicReference();
+                final AtomicReference<Future<?>> f = new AtomicReference<Future<?>>();
                 f.set(suspendTimer.scheduleAtFixedRate(new Runnable() {
                     @Override
                     public void run() {

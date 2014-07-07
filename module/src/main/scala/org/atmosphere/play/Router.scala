@@ -32,7 +32,11 @@ object Router {
       return null;
     }
 
-    val a : AtmosphereController = play.api.Play.current.global.getControllerInstance(controllerClass)
+    var a : AtmosphereController = play.api.Play.current.global.getControllerInstance(controllerClass)
+    if(a == null){
+      a = controllerClass.newInstance();
+    }
+
 
     // Netty fail to decode headers separated by a ','
     val connectionH: Array[String] = request.headers().get("Connection")
@@ -73,7 +77,10 @@ object Router {
     if (!AtmosphereCoordinator.instance().matchPath(request.path)) {
       None
     } else {
-      val a : AtmosphereController = play.api.Play.current.global.getControllerInstance(controllerClass)
+      var a : AtmosphereController = play.api.Play.current.global.getControllerInstance(controllerClass)
+      if(a == null){
+        a = controllerClass.newInstance();
+      }
 
       // Netty fail to decode headers separated by a ','
       val connectionH = request.headers.get("Connection")
