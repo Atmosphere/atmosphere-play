@@ -15,10 +15,14 @@
  */
 package org.atmosphere.play;
 
+import java.util.Collections;
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
 import org.atmosphere.cpr.AtmosphereConfig;
 import org.atmosphere.cpr.AtmosphereFramework;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.atmosphere.util.IOUtils;
+
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.WebSocket;
@@ -26,20 +30,40 @@ import play.mvc.WebSocket;
 public class AtmosphereController extends Controller {
     private final AtmosphereFramework framework;
     private final AtmosphereConfig config;
+    private final AtmospherePlaySessionConverter converter;
 
-    public AtmosphereController() {
+    @SuppressWarnings("unchecked")
+	public AtmosphereController() throws InstantiationException, IllegalAccessException, Exception {
         framework = AtmosphereCoordinator.instance().framework();
         config = framework.getAtmosphereConfig();
+
+        final String playSessionConverter = config.getInitParameter(AtmosphereCoordinator.PLAY_SESSION_CONVERTER);
+        if(StringUtils.isNotBlank(playSessionConverter)){
+        	converter = framework.newClassInstance(AtmospherePlaySessionConverter.class,
+	                                (Class<AtmospherePlaySessionConverter>) IOUtils.loadClass(getClass(), playSessionConverter));
+        } else {
+        	converter = null;
+        }
     }
 
     public WebSocket<String> webSocket() throws Throwable {
-        return new PlayWebSocket(config, request()).internal();
+        return new PlayWebSocket(config, request(), convertedSession()).internal();
     }
-
 
     public Result http() throws Throwable {
         // TODO: Wrong status code on error!
-        return ok(new PlayAsyncIOWriter(request(), response()).internal());
+        return ok(new PlayAsyncIOWriter(request(), convertedSession(), response()).internal());
+    }
+
+    protected Map<String, Object> convertedSession() {
+    	final Map<String, Object> result;
+    	if( converter != null ){
+    		result = converter.convertToAttributes(session());
+    	} else {
+    		result = Collections.emptyMap();
+    	}
+
+    	return result;
     }
 
 }

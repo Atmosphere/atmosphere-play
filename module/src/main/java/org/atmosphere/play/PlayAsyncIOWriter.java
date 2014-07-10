@@ -25,6 +25,7 @@ import org.atmosphere.cpr.HeaderConfig;
 import org.atmosphere.util.ByteArrayAsyncWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import play.api.mvc.Codec;
 import play.core.j.JavaResults;
 import play.libs.F;
@@ -32,10 +33,11 @@ import play.mvc.Http;
 import play.mvc.Results;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements PlayInternal<Results.Chunks> {
+public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements PlayInternal<Results.Chunks<String>> {
     private static final Logger logger = LoggerFactory.getLogger(PlayAsyncIOWriter.class);
     private final AtomicInteger pendingWrite = new AtomicInteger();
     private final AtomicBoolean asyncClose = new AtomicBoolean(false);
@@ -47,7 +49,7 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
     private long lastWrite = 0;
     private boolean resumeOnBroadcast;
 
-    public PlayAsyncIOWriter(final Http.Request request, final Http.Response response) {
+    public PlayAsyncIOWriter(final Http.Request request, final Map<String, Object> additionalAttributes, final Http.Response response) {
         chunks = new Results.Chunks<String>(JavaResults.writeString(Codec.utf_8())) {
             @Override
             public void onReady(Results.Chunks.Out<String> oout) {
@@ -55,7 +57,7 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
                 boolean keepAlive = false;
 
                 try {
-                    final AtmosphereRequest r = AtmosphereUtils.request(request);
+                    final AtmosphereRequest r = AtmosphereUtils.request(request, additionalAttributes);
                     out.onDisconnected(new F.Callback0() {
                         @Override
                         public void invoke() throws Throwable {
@@ -87,7 +89,7 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
         }
     }
 
-    public Results.Chunks internal() {
+    public Results.Chunks<String> internal() {
         return chunks;
     }
 

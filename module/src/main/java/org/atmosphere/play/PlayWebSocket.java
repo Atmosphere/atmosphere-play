@@ -22,11 +22,13 @@ import org.atmosphere.cpr.WebSocketProcessorFactory;
 import org.atmosphere.websocket.WebSocketProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import play.libs.F;
 import play.mvc.Http;
 import play.mvc.WebSocket;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PlayWebSocket extends org.atmosphere.websocket.WebSocket implements PlayInternal<WebSocket<String>> {
@@ -38,7 +40,7 @@ public class PlayWebSocket extends org.atmosphere.websocket.WebSocket implements
     private final AtomicBoolean firstWrite = new AtomicBoolean(false);
     private final WebSocketProcessor webSocketProcessor;
 
-    public PlayWebSocket(final AtmosphereConfig config, final Http.Request request) {
+    public PlayWebSocket(final AtmosphereConfig config, final Http.Request request, final Map<String, Object> additionalAttributes) {
         super(config);
 
         webSocketProcessor = WebSocketProcessorFactory.getDefault().getWebSocketProcessor(config.framework());
@@ -61,7 +63,7 @@ public class PlayWebSocket extends org.atmosphere.websocket.WebSocket implements
                 });
                 AtmosphereRequest r = null;
                 try {
-                    r = AtmosphereUtils.request(request);
+                    r = AtmosphereUtils.request(request, additionalAttributes);
                 } catch (Throwable t) {
                     logger.error("", t);
                 }
@@ -76,7 +78,7 @@ public class PlayWebSocket extends org.atmosphere.websocket.WebSocket implements
         };
     }
 
-    public WebSocket internal() {
+    public WebSocket<String> internal() {
         return w;
     }
 

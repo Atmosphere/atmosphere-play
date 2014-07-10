@@ -15,6 +15,7 @@
  */
 package org.atmosphere.play
 
+import play.api.Play
 import play.api.mvc.Handler
 import play.core.j._
 import play.mvc.Http.RequestHeader
@@ -23,11 +24,19 @@ import play.libs.F.Promise
 object Router {
 
   def dispatch(request: RequestHeader): Handler = {
+	dispatch(request, classOf[AtmosphereController])
+  }
+
+  def dispatch(request: RequestHeader, controllerClass : Class[_<:AtmosphereController]): Handler = {
     if (!AtmosphereCoordinator.instance().matchPath(request.path)) {
       return null;
     }
-    val c = classOf[AtmosphereController]
-    val a = new AtmosphereController
+
+    var a : AtmosphereController = play.api.Play.current.global.getControllerInstance(controllerClass)
+    if(a == null){
+      a = controllerClass.newInstance();
+    }
+
 
     // Netty fail to decode headers separated by a ','
     val connectionH: Array[String] = request.headers().get("Connection")
@@ -50,7 +59,7 @@ object Router {
       JavaWebSocket.ofString(a.webSocket)
     } else {
       new JavaAction {
-        val annotations = new JavaActionAnnotations(c, c.getMethod("http"))
+        val annotations = new JavaActionAnnotations(controllerClass, controllerClass.getMethod("http"))
         val parser = annotations.parser
         def invocation = Promise.pure(a.http)
       }
@@ -59,13 +68,19 @@ object Router {
   }
 
   import play.api.mvc.{RequestHeader=>ScalaRequestHeader}
- 
+
   def dispatch(request: ScalaRequestHeader): Option[Handler] = {
+	dispatch(request, classOf[AtmosphereController])
+  }
+
+  def dispatch(request: ScalaRequestHeader, controllerClass : Class[_<:AtmosphereController]): Option[Handler] = {
     if (!AtmosphereCoordinator.instance().matchPath(request.path)) {
       None
     } else {
-      val c = classOf[AtmosphereController]
-      val a = new AtmosphereController
+      var a : AtmosphereController = play.api.Play.current.global.getControllerInstance(controllerClass)
+      if(a == null){
+        a = controllerClass.newInstance();
+      }
 
       // Netty fail to decode headers separated by a ','
       val connectionH = request.headers.get("Connection")
@@ -76,7 +91,7 @@ object Router {
         Some(JavaWebSocket.ofString(a.webSocket))
       } else {
         Some(new JavaAction {
-          val annotations = new JavaActionAnnotations(c, c.getMethod("http"))
+          val annotations = new JavaActionAnnotations(controllerClass, controllerClass.getMethod("http"))
           val parser = annotations.parser
           def invocation = Promise.pure(a.http)
         }
