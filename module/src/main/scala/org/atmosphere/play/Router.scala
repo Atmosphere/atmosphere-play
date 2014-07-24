@@ -56,7 +56,7 @@ object Router {
     }
 
     if (wsSupported) {
-      JavaWebSocket.ofString(a.webSocket)
+      JavaWebSocket.ofString(a.webSocket())
     } else {
       new JavaAction {
         val annotations = new JavaActionAnnotations(controllerClass, controllerClass.getMethod("http"))
