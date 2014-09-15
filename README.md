@@ -38,7 +38,7 @@ For Play 2.1.x:
 
 If you are interested, subscribe to our [mailing list](http://groups.google.com/group/atmosphere-framework) for more info!  We are on irc.freenode.net under #atmosphere-comet
 
-## WebSockets, Server Side Events, Streaming and Long-Polling transparently supported!
+## WebSockets, Server Sent Events, Streaming and Long-Polling transparently supported!
 
 Server side using atmosphere-runtime
 ```java
