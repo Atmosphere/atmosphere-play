@@ -15,89 +15,58 @@
  */
 package org.atmosphere.play
 
-import play.api.Play
 import play.api.mvc.Handler
+import play.api.mvc.{RequestHeader=>ScalaRequestHeader}
 import play.core.j._
 import play.mvc.Http.RequestHeader
 import play.libs.F.Promise
 
 object Router {
 
-  def dispatch(request: RequestHeader): Handler = {
-	dispatch(request, classOf[AtmosphereController])
-  }
+  private def isWsSupported(upgradeHeader: Option[String], connectionHeaders: Seq[String]): Boolean =
+    upgradeHeader.map("websocket".equalsIgnoreCase)
+    .getOrElse(connectionHeaders.contains("upgrade".equalsIgnoreCase _))
 
-  def dispatch(request: RequestHeader, controllerClass : Class[_<:AtmosphereController]): Handler = {
-    if (!AtmosphereCoordinator.instance().matchPath(request.path)) {
-      return null;
-    }
+  private def dispatch(requestPath: String,
+                       controllerClass : Class[_<:AtmosphereController],
+                       upgradeHeader: Option[String],
+                       connectionHeaders: Seq[String]): Option[Handler] =
 
-    var a : AtmosphereController = play.api.Play.current.global.getControllerInstance(controllerClass)
-    if(a == null){
-      a = controllerClass.newInstance();
-    }
-
-
-    // Netty fail to decode headers separated by a ','
-    val connectionH: Array[String] = request.headers().get("Connection")
-    val webSocketH = request.getHeader("Upgrade")
-    var wsSupported = false;
-
-    if (webSocketH != null && webSocketH.equalsIgnoreCase("websocket")) {
-      wsSupported = true
-    }
-
-    if (!wsSupported && connectionH != null) {
-    for (c: String <- connectionH) {
-      if (c != null && c.toLowerCase().equalsIgnoreCase("upgrade")) {
-        wsSupported = true;
-      }
-    }
-    }
-
-    if (wsSupported) {
-      JavaWebSocket.ofString(a.webSocket())
-    } else {
-      new JavaAction {
-        val annotations = new JavaActionAnnotations(controllerClass, controllerClass.getMethod("http"))
-        val parser = annotations.parser
-        def invocation = Promise.pure(a.http)
-      }
-    }
-
-  }
-
-  import play.api.mvc.{RequestHeader=>ScalaRequestHeader}
-
-  def dispatch(request: ScalaRequestHeader): Option[Handler] = {
-	dispatch(request, classOf[AtmosphereController])
-  }
-
-  def dispatch(request: ScalaRequestHeader, controllerClass : Class[_<:AtmosphereController]): Option[Handler] = {
-    if (!AtmosphereCoordinator.instance().matchPath(request.path)) {
+    if (!AtmosphereCoordinator.instance.matchPath(requestPath))
       None
-    } else {
-      var a : AtmosphereController = play.api.Play.current.global.getControllerInstance(controllerClass)
-      if(a == null){
-        a = controllerClass.newInstance();
-      }
+
+    else {
+      val controller : AtmosphereController =
+        Option(play.api.Play.current.global.getControllerInstance(controllerClass))
+          .getOrElse(controllerClass.newInstance)
 
       // Netty fail to decode headers separated by a ','
-      val connectionH = request.headers.get("Connection")
-      val webSocketH = request.headers.get("Upgrade")
-      val wsSupported = webSocketH.isDefined || connectionH.map(_.toLowerCase.contains("upgrade")).getOrElse(false)
+      val javaAction =
+        if (isWsSupported(upgradeHeader, connectionHeaders))
+          JavaWebSocket.ofString(controller.webSocket)
+        else
+          new JavaAction {
+            val annotations = new JavaActionAnnotations(controllerClass, controllerClass.getMethod("http"))
+            val parser = annotations.parser
+            def invocation = Promise.pure(controller.http)
+          }
 
-      if (wsSupported) {
-        Some(JavaWebSocket.ofString(a.webSocket))
-      } else {
-        Some(new JavaAction {
-          val annotations = new JavaActionAnnotations(controllerClass, controllerClass.getMethod("http"))
-          val parser = annotations.parser
-          def invocation = Promise.pure(a.http)
-        }
-        )
-      }
+      Some(javaAction)
     }
+
+  def dispatch(request: RequestHeader): Handler =
+	  dispatch(request, classOf[AtmosphereController])
+
+  def dispatch(request: RequestHeader, controllerClass : Class[_<:AtmosphereController]): Handler = {
+
+    val upgradeHeader = Option(request.getHeader("Upgrade"))
+    val connectionHeaders = Option(request.headers.get("Connection")).map(_.toSeq).getOrElse(Seq.empty)
+    dispatch(request.path, controllerClass, upgradeHeader, connectionHeaders).orNull
   }
 
+  def dispatch(request: ScalaRequestHeader): Option[Handler] =
+	  dispatch(request, classOf[AtmosphereController])
+
+  def dispatch(request: ScalaRequestHeader, controllerClass : Class[_<:AtmosphereController]): Option[Handler] =
+    dispatch(request.path, controllerClass, request.headers.get("Upgrade"), request.headers.getAll("Connection"))
 }
