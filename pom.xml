@@ -46,8 +46,8 @@
         <dependencies>
             <dependency>
                 <groupId>com.typesafe.play</groupId>
-                <artifactId>play_2.11</artifactId>
-                <version>2.3.2</version>
+                <artifactId>play_2.10</artifactId>
+                <version>2.3.4</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -263,7 +263,7 @@
         <repository>
             <id>typesafe</id>
             <name>typesafe-releases</name>
-            <url>http://repo.typesafe.com/typesafe/releases/</url>
+            <url>http://repo.typesafe.com/typesafe/maven-releases/</url>
         </repository>
     </repositories>
     <distributionManagement>
@@ -283,7 +283,7 @@
         <surefire.redirectTestOutputToFile>false</surefire.redirectTestOutputToFile>
         <source.property>1.6</source.property>
         <target.property>1.6</target.property>
-        <atmosphere.version>2.2.0</atmosphere.version>
+        <atmosphere.version>2.2.1</atmosphere.version>
     </properties>
 </project>
 
