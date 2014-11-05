@@ -153,5 +153,5 @@ and on the client side,
         subSocket = socket.subscribe(request);
 ```
 
-[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/61ce12ae5ad452efed81c066acf7a628 "githalytics.com")](http://githalytics.com/Atmosphere/atmosphere-play)
 
+[![Analytics](https://ga-beacon.appspot.com/UA-31990725-2/Atmosphere/atmosphere-play)]
