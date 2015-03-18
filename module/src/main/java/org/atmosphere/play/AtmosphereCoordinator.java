@@ -123,7 +123,7 @@ public class AtmosphereCoordinator {
                 keptOpen = false;
             }
 
-            logger.debug("Transport {} resumeOnBroadcast {}", transport, resumeOnBroadcast);
+            logger.trace("Transport {} resumeOnBroadcast {}", transport, resumeOnBroadcast);
 
             final Action action = (Action) request.getAttribute(NettyCometSupport.SUSPEND);
             if (action != null && action.type() == Action.TYPE.SUSPEND && action.timeout() != -1) {
