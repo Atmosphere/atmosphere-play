@@ -50,6 +50,8 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
     private boolean resumeOnBroadcast;
 
     public PlayAsyncIOWriter(final Http.Request request, final Map<String, Object> additionalAttributes, final Http.Response response) {
+        final String[] transport = request.queryString() != null ? request.queryString().get(HeaderConfig.X_ATMOSPHERE_TRANSPORT) : null;
+
         chunks = new Results.Chunks<String>(JavaResults.writeString(Codec.utf_8())) {
             @Override
             public void onReady(Results.Chunks.Out<String> oout) {
@@ -58,12 +60,14 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
 
                 try {
                     final AtmosphereRequest r = AtmosphereUtils.request(request, additionalAttributes);
-                    out.onDisconnected(new F.Callback0() {
-                        @Override
-                        public void invoke() throws Throwable {
-                            _close(r);
-                        }
-                    });
+                    if (transport != null && transport.length > 0 && !transport[0].equalsIgnoreCase(HeaderConfig.POLLING_TRANSPORT)) {
+                        out.onDisconnected(new F.Callback0() {
+                            @Override
+                            public void invoke() throws Throwable {
+                                _close(r);
+                            }
+                        });
+                    }
 
                     AtmosphereResponse res = new AtmosphereResponse.Builder()
                             .asyncIOWriter(PlayAsyncIOWriter.this)
@@ -83,7 +87,6 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
 
         // TODO: Configuring headers in Atmosphere won't work as the onReady is asynchronously called.
         // TODO: Some Broadcaster's Cache won't work as well.
-        String[] transport = request.queryString() != null ? request.queryString().get(HeaderConfig.X_ATMOSPHERE_TRANSPORT) : null;
         if (transport != null && transport.length > 0 && transport[0].equalsIgnoreCase(HeaderConfig.SSE_TRANSPORT)) {
             response.setContentType("text/event-stream");
         }
