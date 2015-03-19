@@ -41,15 +41,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.atmosphere.cpr.HeaderConfig.X_ATMOSPHERE_TRANSPORT;
 
 public class AtmosphereCoordinator {
-    private static final Logger logger = LoggerFactory.getLogger(AtmosphereCoordinator.class);
+    private static Logger logger = LoggerFactory.getLogger(AtmosphereCoordinator.class);
 
-    public final static String PLAY_SESSION_CONVERTER = "org.atmopshere.play.AtmospherePlaySessionConverter";
+    public static String PLAY_SESSION_CONVERTER = "org.atmopshere.play.AtmospherePlaySessionConverter";
 
-    private final AtmosphereFramework framework;
-    private final AsynchronousProcessor asynchronousProcessor;
-    public final static AtmosphereCoordinator instance = new AtmosphereCoordinator();
-    private final ScheduledExecutorService suspendTimer;
-    private final EndpointMapper<AtmosphereFramework.AtmosphereHandlerWrapper> mapper;
+    private AtmosphereFramework framework;
+    private AsynchronousProcessor asynchronousProcessor;
+    public static AtmosphereCoordinator instance = new AtmosphereCoordinator();
+    private ScheduledExecutorService suspendTimer;
+    private EndpointMapper<AtmosphereFramework.AtmosphereHandlerWrapper> mapper;
 
     private AtmosphereCoordinator() {
         framework = new AtmosphereFramework();
@@ -81,7 +81,7 @@ public class AtmosphereCoordinator {
         return mapper.map(path, framework().getAtmosphereHandlers()) == null ? false : true;
     }
 
-    public AtmosphereCoordinator path(String mappingPath){
+    public AtmosphereCoordinator path(String mappingPath) {
         framework.addInitParameter(ApplicationConfig.ATMOSPHERE_HANDLER_MAPPING, mappingPath);
         return this;
     }
@@ -91,7 +91,10 @@ public class AtmosphereCoordinator {
         return this;
     }
 
-    public static final AtmosphereCoordinator instance() {
+    public static AtmosphereCoordinator instance() {
+        if (instance.framework().isDestroyed()) {
+            instance = new AtmosphereCoordinator();
+        }
         return instance;
     }
 
