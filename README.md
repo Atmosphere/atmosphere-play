@@ -4,7 +4,7 @@ This project brings the [Atmosphere Framework](https://github.com/Atmosphere/atm
 
 ## Try it!
 
-Fork the [samples workspace](https://github.com/Atmosphere/atmosphere-samples/tree/master/play-samples) and go under samples/chat or samples/jerseyy)
+Fork the [samples workspace](https://github.com/Atmosphere/atmosphere-samples/tree/master/play-samples) and go under samples/chat or samples/jersey)
 
 ```bash
    % sbt update
