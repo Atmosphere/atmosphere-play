@@ -4,12 +4,11 @@ This project brings the [Atmosphere Framework](https://github.com/Atmosphere/atm
 
 ## Try it!
 
-Fork the workspace and go under samples/chat or samples/jersey, or download the sample's binaries [Chat]() [Jersey](http://search.maven.org/#search%7Cga%7C1%7Catmosphere-play)
+Fork the [samples workspace](https://github.com/Atmosphere/atmosphere-samples/tree/master/play-samples) and go under samples/chat or samples/jerseyy)
 
 ```bash
-   % unzip atmosphere-play-<name>-.zip
-   % chmod a+x ./start
-   % ./start
+   % sbt update
+   % sbt run
 ```
 
 Download [Atmosphere Play!](http://search.maven.org/#search%7Cga%7C1%7Catmosphere-play), use Maven or  [sbt](http://ntcoding.blogspot.ca/2013/09/atmosphere-scala-sbt-akka-step-by-step.html)
