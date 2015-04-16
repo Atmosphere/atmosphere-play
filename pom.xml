@@ -76,9 +76,10 @@
                 <version>1.0.13</version>
             </dependency>
             <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>servlet-api</artifactId>
-                <version>2.5</version>
+                <groupId>org.apache.geronimo.specs</groupId>
+                <artifactId>geronimo-servlet_3.0_spec</artifactId>
+                <version>1.0</version>
+                <optional>true</optional>
             </dependency>
 
             <!-- Test -->
@@ -283,7 +284,7 @@
         <surefire.redirectTestOutputToFile>false</surefire.redirectTestOutputToFile>
         <source.property>1.6</source.property>
         <target.property>1.6</target.property>
-        <atmosphere.version>2.2.6</atmosphere.version>
+        <atmosphere.version>2.3.0-SNAPSHOT</atmosphere.version>
     </properties>
 </project>
 
