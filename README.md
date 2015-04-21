@@ -19,7 +19,7 @@ For Play 2.2.x+:
      <dependency>
          <groupId>org.atmosphere</groupId>
          <artifactId>atmosphere-play</artifactId>
-         <version>2.1.1</version>
+         <version>2.1.2</version>
      </dependency>
 ```
 
