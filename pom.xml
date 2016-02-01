@@ -46,8 +46,8 @@
         <dependencies>
             <dependency>
                 <groupId>com.typesafe.play</groupId>
-                <artifactId>play_2.10</artifactId>
-                <version>2.3.4</version>
+                <artifactId>play_2.11</artifactId>
+                <version>2.4.6</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -252,21 +252,21 @@
             </plugin>
         </plugins>
     </reporting>
-    <repositories>
-        <repository>
-            <id>oss.sonatype.org</id>
-            <url>http://oss.sonatype.org/content/repositories/releases</url>
-        </repository>
-        <repository>
-            <id>oss.sonatype.org-snapshot</id>
-            <url>http://oss.sonatype.org/content/repositories/snapshots</url>
-        </repository>
-        <repository>
-            <id>typesafe</id>
-            <name>typesafe-releases</name>
-            <url>http://repo.typesafe.com/typesafe/maven-releases/</url>
-        </repository>
-    </repositories>
+    <!--<repositories>-->
+        <!--<repository>-->
+            <!--<id>oss.sonatype.org</id>-->
+            <!--<url>http://oss.sonatype.org/content/repositories/releases</url>-->
+        <!--</repository>-->
+        <!--<repository>-->
+            <!--<id>oss.sonatype.org-snapshot</id>-->
+            <!--<url>http://oss.sonatype.org/content/repositories/snapshots</url>-->
+        <!--</repository>-->
+        <!--<repository>-->
+            <!--<id>typesafe</id>-->
+            <!--<name>typesafe-releases</name>-->
+            <!--<url>http://repo.typesafe.com/typesafe/maven-releases/</url>-->
+        <!--</repository>-->
+    <!--</repositories>-->
     <distributionManagement>
         <repository>
             <id>sonatype-nexus-staging</id>
@@ -282,9 +282,9 @@
     <properties>
         <distMgmtSnapshotsUrl>http://oss.sonatype.org/content/repositories/snapshots</distMgmtSnapshotsUrl>
         <surefire.redirectTestOutputToFile>false</surefire.redirectTestOutputToFile>
-        <source.property>1.6</source.property>
-        <target.property>1.6</target.property>
-        <atmosphere.version>2.3.5-SNAPSHOT</atmosphere.version>
+        <source.property>1.8</source.property>
+        <target.property>1.8</target.property>
+        <atmosphere.version>2.3.4</atmosphere.version>
     </properties>
 </project>
 

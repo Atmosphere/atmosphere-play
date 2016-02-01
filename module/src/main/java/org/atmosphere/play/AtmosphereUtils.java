@@ -16,7 +16,6 @@
 package org.atmosphere.play;
 
 import org.atmosphere.cpr.AtmosphereRequest;
-import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.mvc.Http;
@@ -111,7 +110,7 @@ public class AtmosphereUtils {
 
 
     public static String getBaseUri(final Http.Request request) {
-        return "http://" + request.getHeader(HttpHeaders.Names.HOST) + "/";
+        return "http://" + request.getHeader(Http.HeaderNames.HOST) + "/";
 
     }
 
