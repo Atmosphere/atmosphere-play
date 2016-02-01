@@ -252,21 +252,21 @@
             </plugin>
         </plugins>
     </reporting>
-    <!--<repositories>-->
-        <!--<repository>-->
-            <!--<id>oss.sonatype.org</id>-->
-            <!--<url>http://oss.sonatype.org/content/repositories/releases</url>-->
-        <!--</repository>-->
-        <!--<repository>-->
-            <!--<id>oss.sonatype.org-snapshot</id>-->
-            <!--<url>http://oss.sonatype.org/content/repositories/snapshots</url>-->
-        <!--</repository>-->
-        <!--<repository>-->
-            <!--<id>typesafe</id>-->
-            <!--<name>typesafe-releases</name>-->
-            <!--<url>http://repo.typesafe.com/typesafe/maven-releases/</url>-->
-        <!--</repository>-->
-    <!--</repositories>-->
+    <repositories>
+        <repository>
+            <id>oss.sonatype.org</id>
+            <url>http://oss.sonatype.org/content/repositories/releases</url>
+        </repository>
+        <repository>
+            <id>oss.sonatype.org-snapshot</id>
+            <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+        <repository>
+            <id>typesafe</id>
+            <name>typesafe-releases</name>
+            <url>http://repo.typesafe.com/typesafe/maven-releases/</url>
+        </repository>
+    </repositories>
     <distributionManagement>
         <repository>
             <id>sonatype-nexus-staging</id>
