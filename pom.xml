@@ -46,8 +46,8 @@
         <dependencies>
             <dependency>
                 <groupId>com.typesafe.play</groupId>
-                <artifactId>play_2.10</artifactId>
-                <version>2.3.4</version>
+                <artifactId>play_2.11</artifactId>
+                <version>2.4.6</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -282,9 +282,9 @@
     <properties>
         <distMgmtSnapshotsUrl>http://oss.sonatype.org/content/repositories/snapshots</distMgmtSnapshotsUrl>
         <surefire.redirectTestOutputToFile>false</surefire.redirectTestOutputToFile>
-        <source.property>1.6</source.property>
-        <target.property>1.6</target.property>
-        <atmosphere.version>2.3.5-SNAPSHOT</atmosphere.version>
+        <source.property>1.8</source.property>
+        <target.property>1.8</target.property>
+        <atmosphere.version>2.3.4</atmosphere.version>
     </properties>
 </project>
 
