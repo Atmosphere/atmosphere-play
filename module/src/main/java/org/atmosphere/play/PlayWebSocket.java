@@ -17,7 +17,7 @@ package org.atmosphere.play;
 
 import org.atmosphere.cpr.AtmosphereConfig;
 import org.atmosphere.cpr.AtmosphereRequest;
-import org.atmosphere.cpr.AtmosphereResponse;
+import org.atmosphere.cpr.AtmosphereResponseImpl;
 import org.atmosphere.cpr.WebSocketProcessorFactory;
 import org.atmosphere.websocket.WebSocketProcessor;
 import org.slf4j.Logger;
@@ -69,7 +69,7 @@ public class PlayWebSocket extends org.atmosphere.websocket.WebSocket implements
                 }
 
                 try {
-                    webSocketProcessor.open(PlayWebSocket.this, r, AtmosphereResponse.newInstance(config, r, PlayWebSocket.this));
+                    webSocketProcessor.open(PlayWebSocket.this, r, AtmosphereResponseImpl.newInstance(config, r, PlayWebSocket.this));
                 } catch (IOException e) {
                     logger.error("", e);
                     out.close();

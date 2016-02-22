@@ -21,6 +21,7 @@ import org.atmosphere.cpr.AtmosphereInterceptorWriter;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResourceImpl;
 import org.atmosphere.cpr.AtmosphereResponse;
+import org.atmosphere.cpr.AtmosphereResponseImpl;
 import org.atmosphere.cpr.HeaderConfig;
 import org.atmosphere.util.ByteArrayAsyncWriter;
 import org.slf4j.Logger;
@@ -69,7 +70,7 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
                         });
                     }
 
-                    AtmosphereResponse res = new AtmosphereResponse.Builder()
+                    AtmosphereResponse res = new AtmosphereResponseImpl.Builder()
                             .asyncIOWriter(PlayAsyncIOWriter.this)
                             .writeHeader(false)
                             .request(r).build();
