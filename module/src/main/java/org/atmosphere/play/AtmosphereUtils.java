@@ -16,6 +16,7 @@
 package org.atmosphere.play;
 
 import org.atmosphere.cpr.AtmosphereRequest;
+import org.atmosphere.cpr.AtmosphereRequestImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.mvc.Http;
@@ -85,7 +86,7 @@ public class AtmosphereUtils {
         int port = uri == null ? 0 : uri.getPort();
         String uriString = uri == null ? request.remoteAddress() : uri.toString();
         String host = uri == null ? request.remoteAddress() : uri.getHost();
-        AtmosphereRequest.Builder requestBuilder = new AtmosphereRequest.Builder();
+        AtmosphereRequest.Builder requestBuilder = new AtmosphereRequestImpl.Builder();
         AtmosphereRequest r = requestBuilder.requestURI(url.substring(l))
                 .requestURL(u)
                 .pathInfo(url.substring(l))

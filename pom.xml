@@ -9,7 +9,7 @@
     <groupId>org.atmosphere</groupId>
     <artifactId>play-project</artifactId>
     <name>Atmosphere Play Project</name>
-    <version>2.2.1-SNAPSHOT</version>
+    <version>2.3.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>
         Atmosphere running on top of Play!
@@ -284,7 +284,7 @@
         <surefire.redirectTestOutputToFile>false</surefire.redirectTestOutputToFile>
         <source.property>1.8</source.property>
         <target.property>1.8</target.property>
-        <atmosphere.version>2.3.4</atmosphere.version>
+        <atmosphere.version>2.4.2</atmosphere.version>
     </properties>
 </project>
 
