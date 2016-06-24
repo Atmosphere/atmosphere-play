@@ -25,18 +25,20 @@ import org.slf4j.LoggerFactory;
 
 import play.libs.F;
 import play.mvc.Http;
+import play.mvc.LegacyWebSocket;
 import play.mvc.WebSocket;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
-public class PlayWebSocket extends org.atmosphere.websocket.WebSocket implements PlayInternal<WebSocket<String>> {
+public class PlayWebSocket extends org.atmosphere.websocket.WebSocket implements PlayInternal<LegacyWebSocket<String>> {
     private static final Logger logger = LoggerFactory.getLogger(PlayWebSocket.class);
     private WebSocket.Out<String> out;
     private WebSocket.In<String> in;
 
-    private final WebSocket<String> w;
+    private final LegacyWebSocket<String> w;
     private final AtomicBoolean firstWrite = new AtomicBoolean(false);
     private final WebSocketProcessor webSocketProcessor;
 
@@ -44,23 +46,13 @@ public class PlayWebSocket extends org.atmosphere.websocket.WebSocket implements
         super(config);
 
         webSocketProcessor = WebSocketProcessorFactory.getDefault().getWebSocketProcessor(config.framework());
-        w = new WebSocket<String>() {
+        w = new LegacyWebSocket<String>() {
             @Override
-            public void onReady(WebSocket.In<String> iin, Out<String> oout) {
+            public void onReady(WebSocket.In<String> iin, WebSocket.Out<String> oout) {
                 out = oout;
                 in = iin;
-                in.onClose(new F.Callback0() {
-                    @Override
-                    public void invoke() throws Throwable {
-                        webSocketProcessor.close(PlayWebSocket.this, 1002);
-                    }
-                });
-                in.onMessage(new F.Callback<String>() {
-                    @Override
-                    public void invoke(String message) throws Throwable {
-                        webSocketProcessor.invokeWebSocketProtocol(PlayWebSocket.this, message);
-                    }
-                });
+                in.onClose(() -> webSocketProcessor.close(PlayWebSocket.this, 1002));
+                in.onMessage(message -> webSocketProcessor.invokeWebSocketProtocol(PlayWebSocket.this, message));
                 AtmosphereRequest r = null;
                 try {
                     r = AtmosphereUtils.request(request, additionalAttributes);
@@ -78,7 +70,7 @@ public class PlayWebSocket extends org.atmosphere.websocket.WebSocket implements
         };
     }
 
-    public WebSocket<String> internal() {
+    public LegacyWebSocket<String> internal() {
         return w;
     }
 

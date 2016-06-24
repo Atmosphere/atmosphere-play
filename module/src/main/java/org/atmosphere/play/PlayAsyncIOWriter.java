@@ -62,12 +62,7 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
                 try {
                     final AtmosphereRequest r = AtmosphereUtils.request(request, additionalAttributes);
                     if (transport != null && transport.length > 0 && !transport[0].equalsIgnoreCase(HeaderConfig.POLLING_TRANSPORT)) {
-                        out.onDisconnected(new F.Callback0() {
-                            @Override
-                            public void invoke() throws Throwable {
-                                _close(r);
-                            }
-                        });
+                        out.onDisconnected(() -> _close(r));
                     }
 
                     AtmosphereResponse res = new AtmosphereResponseImpl.Builder()

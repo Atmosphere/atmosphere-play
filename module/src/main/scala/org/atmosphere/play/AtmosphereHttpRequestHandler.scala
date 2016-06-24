@@ -1,18 +1,23 @@
 package org.atmosphere.play
 
+import java.util.concurrent.CompletableFuture
+
 import com.google.inject.Inject
 import play.api.http._
+import play.api.inject.Injector
 import play.api.mvc.{Handler, RequestHeader}
 import play.api.routing.Router
 import play.core.j._
-import play.libs.F.Promise
+import play.api.mvc.BodyParser
+import play.mvc.Http.RequestBody
 
 
 class AtmosphereHttpRequestHandler @Inject()(components: JavaHandlerComponents,
                                              router: Router,
                                              errorHandler: HttpErrorHandler,
                                              configuration: HttpConfiguration,
-                                             filters: HttpFilters)
+                                             filters: HttpFilters,
+                                             injector: Injector)
   extends JavaCompatibleHttpRequestHandler(router, errorHandler, configuration, filters, components) {
 
   override def routeRequest(request: RequestHeader) = {
@@ -37,8 +42,7 @@ class AtmosphereHttpRequestHandler @Inject()(components: JavaHandlerComponents,
 
     else {
       val controller: AtmosphereController =
-        Option(play.api.Play.current.injector.instanceOf(controllerClass))
-          .getOrElse(controllerClass.newInstance)
+        Option(injector.instanceOf(controllerClass)).getOrElse(controllerClass.newInstance)
 
       // Netty fail to decode headers separated by a ','
       val javaAction =
@@ -47,15 +51,26 @@ class AtmosphereHttpRequestHandler @Inject()(components: JavaHandlerComponents,
         else
           new JavaAction(components) {
             val annotations = new JavaActionAnnotations(controllerClass, controllerClass.getMethod("http"))
-            val parser = annotations.parser
+            val parser = javaBodyParserToScala(injector.instanceOf(annotations.parser))
 
-            def invocation = Promise.pure(controller.http)
+            def invocation = CompletableFuture.completedFuture(controller.http)
           }
 
       Some(javaAction)
     }
   }
 
+  def javaBodyParserToScala(parser: play.mvc.BodyParser[_]): BodyParser[RequestBody] = BodyParser { request =>
+    val accumulator = parser.apply(new play.core.j.RequestHeaderImpl(request)).asScala()
+    import play.api.libs.iteratee.Execution.Implicits.trampoline
+    accumulator.map { javaEither =>
+      if (javaEither.left.isPresent) {
+        Left(javaEither.left.get().asScala())
+      } else {
+        Right(new RequestBody(javaEither.right.get()))
+      }
+    }
+  }
 
   def dispatch(request: RequestHeader): Option[Handler] =
     dispatch(request, classOf[AtmosphereController])
