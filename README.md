@@ -53,9 +53,6 @@ For Play 2.1.x:
      </dependency>
 ```
 
-
-
-
 ## Join the growing community
 
 If you are interested, subscribe to our [mailing list](http://groups.google.com/group/atmosphere-framework) for more info!  We are on irc.freenode.net under #atmosphere-comet
