@@ -20,8 +20,8 @@ import org.atmosphere.cpr.AtmosphereConfig;
 import org.atmosphere.cpr.AtmosphereFramework;
 import org.atmosphere.util.IOUtils;
 import play.mvc.Controller;
+import play.mvc.LegacyWebSocket;
 import play.mvc.Result;
-import play.mvc.WebSocket;
 
 import java.util.Collections;
 import java.util.Map;
@@ -45,7 +45,7 @@ public class AtmosphereController extends Controller {
         }
     }
 
-    public WebSocket<String> webSocket() throws Throwable {
+    public LegacyWebSocket<String> webSocket() throws Throwable {
         return new PlayWebSocket(config, request(), convertedSession()).internal();
     }
 
