@@ -15,6 +15,9 @@
  */
 package org.atmosphere.play;
 
+import akka.actor.ActorRef;
+import akka.actor.PoisonPill;
+import akka.util.ByteString;
 import org.atmosphere.cpr.AsyncIOWriter;
 import org.atmosphere.cpr.AsynchronousProcessor;
 import org.atmosphere.cpr.AtmosphereInterceptorWriter;
@@ -22,14 +25,11 @@ import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResourceImpl;
 import org.atmosphere.cpr.AtmosphereResponse;
 import org.atmosphere.cpr.AtmosphereResponseImpl;
-import org.atmosphere.cpr.HeaderConfig;
 import org.atmosphere.util.ByteArrayAsyncWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import play.api.mvc.Codec;
-import play.core.j.JavaResults;
-import play.libs.F;
+import play.api.mvc.RequestHeader;
 import play.mvc.Http;
 import play.mvc.Results;
 
@@ -38,59 +38,54 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements PlayInternal<Results.Chunks<String>> {
+public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter {
     private static final Logger logger = LoggerFactory.getLogger(PlayAsyncIOWriter.class);
     private final AtomicInteger pendingWrite = new AtomicInteger();
     private final AtomicBoolean asyncClose = new AtomicBoolean(false);
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
     private final ByteArrayAsyncWriter buffer = new ByteArrayAsyncWriter();
-    protected Results.Chunks<String> chunks;
-    protected Results.Chunks.Out<String> out;
+//    protected Results.Chunks<String> chunks;
+//    protected Results.Chunks.Out<String> out;
     private boolean byteWritten = false;
     private long lastWrite = 0;
     private boolean resumeOnBroadcast;
+    private Boolean keepAlive;
 
-    public PlayAsyncIOWriter(final Http.Request request, final Map<String, Object> additionalAttributes, final Http.Response response) {
-        final String[] transport = request.queryString() != null ? request.queryString().get(HeaderConfig.X_ATMOSPHERE_TRANSPORT) : null;
+    private ActorRef actorRef;
 
-        chunks = new Results.Chunks<String>(JavaResults.writeString(Codec.utf_8())) {
-            @Override
-            public void onReady(Results.Chunks.Out<String> oout) {
-                out = oout;
-                boolean keepAlive = false;
+    public PlayAsyncIOWriter(ActorRef actorRef, RequestHeader request, Map<String, Object> additionalAttributes) {
+        this.actorRef = actorRef;
+//        final String[] transport = request.queryString() != null ? request.queryString().get(HeaderConfig.X_ATMOSPHERE_TRANSPORT) : null;
+        try {
+            final AtmosphereRequest atmosphereRequest = AtmosphereUtils.request(new Http.RequestImpl(request), additionalAttributes);
+//            if (transport != null && transport.length > 0 && !transport[0].equalsIgnoreCase(HeaderConfig.POLLING_TRANSPORT)) {
+//                out.onDisconnected(() -> _close(atmosphereRequest));
+//            }
 
-                try {
-                    final AtmosphereRequest r = AtmosphereUtils.request(request, additionalAttributes);
-                    if (transport != null && transport.length > 0 && !transport[0].equalsIgnoreCase(HeaderConfig.POLLING_TRANSPORT)) {
-                        out.onDisconnected(() -> _close(r));
-                    }
-
-                    AtmosphereResponse res = new AtmosphereResponseImpl.Builder()
-                            .asyncIOWriter(PlayAsyncIOWriter.this)
-                            .writeHeader(false)
-                            .request(r).build();
-                    keepAlive = AtmosphereCoordinator.instance().route(r, res);
-                } catch (Throwable e) {
-                    logger.error("", e);
-                    keepAlive = true;
-                } finally {
-                    if (!keepAlive) {
-                        out.close();
-                    }
-                }
-            }
-        };
-
-        // TODO: Configuring headers in Atmosphere won't work as the onReady is asynchronously called.
-        // TODO: Some Broadcaster's Cache won't work as well.
-        if (transport != null && transport.length > 0 && transport[0].equalsIgnoreCase(HeaderConfig.SSE_TRANSPORT)) {
-            response.setContentType("text/event-stream");
+            AtmosphereResponse atmosphereResponse = new AtmosphereResponseImpl.Builder()
+                    .asyncIOWriter(PlayAsyncIOWriter.this)
+                    .writeHeader(false)
+                    .request(atmosphereRequest).build();
+            keepAlive = AtmosphereCoordinator.instance().route(atmosphereRequest, atmosphereResponse);
         }
+        catch (Throwable e) {
+            logger.info("[{}] is failed to construct", PlayAsyncIOWriter.class.toString());
+            keepAlive = true;
+        } finally {
+            if (!keepAlive) {
+                actorRef.tell(PoisonPill.getInstance(), ActorRef.noSender());
+            }
+        }
+
+//        if (transport != null && transport.length > 0 && transport[0].equalsIgnoreCase(HeaderConfig.SSE_TRANSPORT)) {
+//            response.setContentType("text/event-stream");
+//        }
+
     }
 
-    public Results.Chunks<String> internal() {
-        return chunks;
-    }
+//    public Results.Chunks<String> internal() {
+//        return chunks;
+//    }
 
     public boolean isClosed() {
         return isClosed.get();
@@ -112,7 +107,9 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
 
         // TODO: Set status
         logger.error("Error {}:{}", errorCode, message);
-        out.write(message);
+
+        //out.write(message);
+        actorRef.tell(ByteString.fromString(message), ActorRef.noSender());
         return this;
     }
 
@@ -153,11 +150,14 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
 
         pendingWrite.incrementAndGet();
 
-        out.write(new String(data, offset, length, r.getCharacterEncoding()));
+       // out.write(new String(data, offset, length, r.getCharacterEncoding()));
+        actorRef.tell(new String(data, offset, length, r.getCharacterEncoding()), ActorRef.noSender());
+
         byteWritten = true;
         lastWrite = System.currentTimeMillis();
         if (resumeOnBroadcast) {
-            out.close();
+            //out.close();
+            actorRef.tell(PoisonPill.getInstance(), ActorRef.noSender());
             _close(r.request());
         }
         return this;
@@ -182,6 +182,7 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
         }
 
         asyncClose.set(true);
-        out.close();
+        //out.close();
+        actorRef.tell(PoisonPill.getInstance(), ActorRef.noSender());
     }
 }

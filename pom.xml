@@ -42,14 +42,30 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+    <properties>
+        <distMgmtSnapshotsUrl>http://oss.sonatype.org/content/repositories/snapshots</distMgmtSnapshotsUrl>
+        <surefire.redirectTestOutputToFile>false</surefire.redirectTestOutputToFile>
+        <source.property>1.8</source.property>
+        <target.property>1.8</target.property>
+        <atmosphere.version>2.5.2</atmosphere.version>
+    </properties>
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>com.typesafe.play</groupId>
-                <artifactId>play_2.11</artifactId>
-                <version>2.5.4</version>
-                <scope>provided</scope>
+                <artifactId>play_2.12</artifactId>
+                <version>2.6.17</version>
             </dependency>
+
+            <!-- https://mvnrepository.com/artifact/com.google.inject/guice -->
+            <dependency>
+                <groupId>com.google.inject</groupId>
+                <artifactId>guice</artifactId>
+                <version>4.2.2</version>
+            </dependency>
+
+
+            <!-- https://mvnrepository.com/artifact/com.google.inject/guice -->
             <dependency>
                 <groupId>org.atmosphere</groupId>
                 <artifactId>atmosphere-play</artifactId>
@@ -279,12 +295,5 @@
             <url>${distMgmtSnapshotsUrl}</url>
         </snapshotRepository>
     </distributionManagement>
-    <properties>
-        <distMgmtSnapshotsUrl>http://oss.sonatype.org/content/repositories/snapshots</distMgmtSnapshotsUrl>
-        <surefire.redirectTestOutputToFile>false</surefire.redirectTestOutputToFile>
-        <source.property>1.8</source.property>
-        <target.property>1.8</target.property>
-        <atmosphere.version>2.4.2</atmosphere.version>
-    </properties>
 </project>
 

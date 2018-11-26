@@ -9,7 +9,9 @@ import play.api.mvc.{Handler, RequestHeader}
 import play.api.routing.Router
 import play.core.j._
 import play.api.mvc.BodyParser
+import play.core.routing.HandlerInvokerFactory
 import play.mvc.Http.RequestBody
+import scala.concurrent.ExecutionContext.Implicits.global
 
 
 class AtmosphereHttpRequestHandler @Inject()(components: JavaHandlerComponents,
@@ -45,16 +47,11 @@ class AtmosphereHttpRequestHandler @Inject()(components: JavaHandlerComponents,
         Option(injector.instanceOf(controllerClass)).getOrElse(controllerClass.newInstance)
 
       // Netty fail to decode headers separated by a ','
-      val javaAction =
+      val javaAction :Handler =
         if (isWsSupported(upgradeHeader, connectionHeaders))
-          JavaWebSocket.ofString(controller.webSocket)
+          controller.webSocket
         else
-          new JavaAction(components) {
-            val annotations = new JavaActionAnnotations(controllerClass, controllerClass.getMethod("http"))
-            val parser = javaBodyParserToScala(injector.instanceOf(annotations.parser))
-
-            def invocation = CompletableFuture.completedFuture(controller.http)
-          }
+          controller.http
 
       Some(javaAction)
     }
@@ -62,7 +59,6 @@ class AtmosphereHttpRequestHandler @Inject()(components: JavaHandlerComponents,
 
   def javaBodyParserToScala(parser: play.mvc.BodyParser[_]): BodyParser[RequestBody] = BodyParser { request =>
     val accumulator = parser.apply(new play.core.j.RequestHeaderImpl(request)).asScala()
-    import play.api.libs.iteratee.Execution.Implicits.trampoline
     accumulator.map { javaEither =>
       if (javaEither.left.isPresent) {
         Left(javaEither.left.get().asScala())

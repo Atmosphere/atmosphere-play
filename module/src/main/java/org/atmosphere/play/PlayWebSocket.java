@@ -15,6 +15,9 @@
  */
 package org.atmosphere.play;
 
+import akka.actor.ActorRef;
+import akka.actor.PoisonPill;
+import akka.util.ByteString;
 import org.atmosphere.cpr.AtmosphereConfig;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResponseImpl;
@@ -25,7 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import play.libs.F;
 import play.mvc.Http;
-import play.mvc.LegacyWebSocket;
+//import play.mvc.LegacyWebSocket;
 import play.mvc.WebSocket;
 
 import java.io.IOException;
@@ -33,45 +36,50 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-public class PlayWebSocket extends org.atmosphere.websocket.WebSocket implements PlayInternal<LegacyWebSocket<String>> {
+public class PlayWebSocket extends org.atmosphere.websocket.WebSocket {
     private static final Logger logger = LoggerFactory.getLogger(PlayWebSocket.class);
-    private WebSocket.Out<String> out;
-    private WebSocket.In<String> in;
+//    private WebSocket.Out<String> out;
+//    private WebSocket.In<String> in;
 
-    private final LegacyWebSocket<String> w;
+    private ActorRef actorRef;
     private final AtomicBoolean firstWrite = new AtomicBoolean(false);
-    private final WebSocketProcessor webSocketProcessor;
 
-    public PlayWebSocket(final AtmosphereConfig config, final Http.Request request, final Map<String, Object> additionalAttributes) {
+    public PlayWebSocket(ActorRef actorRef, final AtmosphereConfig config) {
         super(config);
+        this.actorRef = actorRef;
 
-        webSocketProcessor = WebSocketProcessorFactory.getDefault().getWebSocketProcessor(config.framework());
-        w = new LegacyWebSocket<String>() {
-            @Override
-            public void onReady(WebSocket.In<String> iin, WebSocket.Out<String> oout) {
-                out = oout;
-                in = iin;
-                in.onClose(() -> webSocketProcessor.close(PlayWebSocket.this, 1002));
-                in.onMessage(message -> webSocketProcessor.invokeWebSocketProtocol(PlayWebSocket.this, message));
-                AtmosphereRequest r = null;
-                try {
-                    r = AtmosphereUtils.request(request, additionalAttributes);
-                } catch (Throwable t) {
-                    logger.error("", t);
-                }
-
-                try {
-                    webSocketProcessor.open(PlayWebSocket.this, r, AtmosphereResponseImpl.newInstance(config, r, PlayWebSocket.this));
-                } catch (IOException e) {
-                    logger.error("", e);
-                    out.close();
-                }
-            }
-        };
+//        w = new LegacyWebSocket<String>() {
+//            @Override
+//            public void onReady(WebSocket.In<String> iin, WebSocket.Out<String> oout) {
+////                out = oout;
+////                in = iin;
+//                in.onClose(() -> webSocketProcessor.close(PlayWebSocket.this, 1002));
+//                in.onMessage(message -> webSocketProcessor.invokeWebSocketProtocol(PlayWebSocket.this, message));
+//                AtmosphereRequest r = null;
+//                try {
+//                    r = AtmosphereUtils.request(request, additionalAttributes);
+//                } catch (Throwable t) {
+//                    logger.error("", t);
+//                }
+//
+//                try {
+//                    webSocketProcessor.open(PlayWebSocket.this, r, AtmosphereResponseImpl.newInstance(config, r, PlayWebSocket.this));
+//                } catch (IOException e) {
+//                    logger.error("", e);
+//                    out.close();
+//                }
+//            }
+//        };
     }
 
-    public LegacyWebSocket<String> internal() {
-        return w;
+//    public LegacyWebSocket<String> internal() {
+//        return w;
+//    }
+
+
+    @Override
+    public boolean isOpen() {
+        return false;
     }
 
     /**
@@ -83,7 +91,8 @@ public class PlayWebSocket extends org.atmosphere.websocket.WebSocket implements
         if (!isOpen()) throw new IOException("Connection remotely closed");
 
         logger.trace("WebSocket.write()");
-        out.write(data);
+       // out.write(data);
+        this.actorRef.tell(ByteString.fromString(data), ActorRef.noSender());
         lastWrite = System.currentTimeMillis();
         return this;
     }
@@ -96,14 +105,10 @@ public class PlayWebSocket extends org.atmosphere.websocket.WebSocket implements
         firstWrite.set(true);
         if (!isOpen()) throw new IOException("Connection remotely closed");
 
-        out.write(new String(data, offset, length, "UTF-8"));
-        return this;
-    }
+       // out.write(new String(data, offset, length, "UTF-8"));
 
-    @Override
-    public boolean isOpen() {
-        //return in.isOpen();
-        return true;
+        this.actorRef.tell(new String(data, offset, length, "UTF-8"), ActorRef.noSender());
+        return this;
     }
 
     /**
@@ -111,7 +116,8 @@ public class PlayWebSocket extends org.atmosphere.websocket.WebSocket implements
      */
     @Override
     public void close() {
-        out.close();
+        //out.close();
+        this.actorRef.tell(PoisonPill.getInstance(), ActorRef.noSender());
     }
 }
 
