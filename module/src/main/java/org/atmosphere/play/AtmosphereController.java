@@ -22,6 +22,7 @@ import org.atmosphere.util.IOUtils;
 import play.mvc.Controller;
 import play.mvc.LegacyWebSocket;
 import play.mvc.Result;
+import play.mvc.StatusHeader;
 
 import java.util.Collections;
 import java.util.Map;
@@ -51,7 +52,7 @@ public class AtmosphereController extends Controller {
 
     public Result http() throws Throwable {
         // TODO: Wrong status code on error!
-        return ok(new PlayAsyncIOWriter(request(), convertedSession(), response()).internal());
+        return new StatusHeader(200).chunked(new PlayAsyncIOWriter(request(), convertedSession(), response()).internal());
     }
 
     protected Map<String, Object> convertedSession() {

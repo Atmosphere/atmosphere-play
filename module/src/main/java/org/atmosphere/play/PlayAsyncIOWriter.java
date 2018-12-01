@@ -15,6 +15,12 @@
  */
 package org.atmosphere.play;
 
+import akka.NotUsed;
+import akka.actor.ActorRef;
+import akka.actor.Status.Success;
+import akka.stream.OverflowStrategy;
+import akka.stream.javadsl.Source;
+import akka.util.ByteString;
 import org.atmosphere.cpr.AsyncIOWriter;
 import org.atmosphere.cpr.AsynchronousProcessor;
 import org.atmosphere.cpr.AtmosphereInterceptorWriter;
@@ -26,60 +32,68 @@ import org.atmosphere.cpr.HeaderConfig;
 import org.atmosphere.util.ByteArrayAsyncWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import play.api.mvc.Codec;
-import play.core.j.JavaResults;
-import play.libs.F;
 import play.mvc.Http;
-import play.mvc.Results;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements PlayInternal<Results.Chunks<String>> {
+public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements PlayInternal<Source<ByteString, ?>> {
     private static final Logger logger = LoggerFactory.getLogger(PlayAsyncIOWriter.class);
     private final AtomicInteger pendingWrite = new AtomicInteger();
     private final AtomicBoolean asyncClose = new AtomicBoolean(false);
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
     private final ByteArrayAsyncWriter buffer = new ByteArrayAsyncWriter();
-    protected Results.Chunks<String> chunks;
-    protected Results.Chunks.Out<String> out;
+    private Source<ByteString, ?> source;
+    private OutStream out;
     private boolean byteWritten = false;
     private long lastWrite = 0;
     private boolean resumeOnBroadcast;
 
     public PlayAsyncIOWriter(final Http.Request request, final Map<String, Object> additionalAttributes, final Http.Response response) {
         final String[] transport = request.queryString() != null ? request.queryString().get(HeaderConfig.X_ATMOSPHERE_TRANSPORT) : null;
+        this.source = Source.<ByteString>actorRef(100, OverflowStrategy.dropNew()).mapMaterializedValue(actorRef -> {
+            out = new OutStream() {
+                @Override
+                public void write(String message) {
+                    actorRef.tell(ByteString.fromString(message), ActorRef.noSender());
+                }
 
-        chunks = new Results.Chunks<String>(JavaResults.writeString(Codec.utf_8())) {
-            @Override
-            public void onReady(Results.Chunks.Out<String> oout) {
-                out = oout;
-                boolean keepAlive = false;
+                @Override
+                public void close() {
+                    actorRef.tell(new Success(200), ActorRef.noSender());
+                }
+            };
+            boolean keepAlive = false;
 
-                try {
-                    final AtmosphereRequest r = AtmosphereUtils.request(request, additionalAttributes);
-                    if (transport != null && transport.length > 0 && !transport[0].equalsIgnoreCase(HeaderConfig.POLLING_TRANSPORT)) {
-                        out.onDisconnected(() -> _close(r));
-                    }
+            try {
+                final AtmosphereRequest r = AtmosphereUtils.request(request, additionalAttributes);
 
-                    AtmosphereResponse res = new AtmosphereResponseImpl.Builder()
-                            .asyncIOWriter(PlayAsyncIOWriter.this)
-                            .writeHeader(false)
-                            .request(r).build();
-                    keepAlive = AtmosphereCoordinator.instance().route(r, res);
-                } catch (Throwable e) {
-                    logger.error("", e);
-                    keepAlive = true;
-                } finally {
-                    if (!keepAlive) {
-                        out.close();
-                    }
+                AtmosphereResponse res = new AtmosphereResponseImpl.Builder()
+                        .asyncIOWriter(PlayAsyncIOWriter.this)
+                        .writeHeader(false)
+                        .request(r).build();
+                keepAlive = AtmosphereCoordinator.instance().route(r, res);
+            } catch (Throwable e) {
+                logger.error("", e);
+                keepAlive = true;
+            } finally {
+                if (!keepAlive) {
+                    out.close();
                 }
             }
-        };
+
+            return NotUsed.getInstance();
+        }).watchTermination((arg1, arg2) -> {
+            try {
+                if (transport != null && transport.length > 0 && !transport[0].equalsIgnoreCase(HeaderConfig.POLLING_TRANSPORT)) {
+                    _close(AtmosphereUtils.request(request, additionalAttributes));
+                }
+            } catch (Throwable ignored) {
+            }
+            return NotUsed.getInstance();
+        });
 
         // TODO: Configuring headers in Atmosphere won't work as the onReady is asynchronously called.
         // TODO: Some Broadcaster's Cache won't work as well.
@@ -88,8 +102,8 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
         }
     }
 
-    public Results.Chunks<String> internal() {
-        return chunks;
+    public Source<ByteString, ?> internal() {
+        return source;
     }
 
     public boolean isClosed() {
