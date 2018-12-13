@@ -9,7 +9,7 @@
     <groupId>org.atmosphere</groupId>
     <artifactId>play-project</artifactId>
     <name>Atmosphere Play Project</name>
-    <version>2.4.0</version>
+    <version>2.4.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>
         Atmosphere running on top of Play!
