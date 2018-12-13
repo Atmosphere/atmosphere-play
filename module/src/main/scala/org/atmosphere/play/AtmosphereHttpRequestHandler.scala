@@ -1,15 +1,15 @@
 package org.atmosphere.play
 
-import java.util.concurrent.CompletableFuture
-
-import com.google.inject.Inject
+import javax.inject.Inject
 import play.api.http._
 import play.api.inject.Injector
-import play.api.mvc.{Handler, RequestHeader}
+import play.api.mvc.{BodyParser, Handler, RequestHeader}
 import play.api.routing.Router
 import play.core.j._
-import play.api.mvc.BodyParser
 import play.mvc.Http.RequestBody
+
+import scala.concurrent.ExecutionContext.Implicits.global
+
 
 
 class AtmosphereHttpRequestHandler @Inject()(components: JavaHandlerComponents,
@@ -18,6 +18,7 @@ class AtmosphereHttpRequestHandler @Inject()(components: JavaHandlerComponents,
                                              configuration: HttpConfiguration,
                                              filters: HttpFilters,
                                              injector: Injector)
+
   extends JavaCompatibleHttpRequestHandler(router, errorHandler, configuration, filters, components) {
 
   override def routeRequest(request: RequestHeader) = {
@@ -33,45 +34,6 @@ class AtmosphereHttpRequestHandler @Inject()(components: JavaHandlerComponents,
     upgradeHeader.map("websocket".equalsIgnoreCase)
       .getOrElse(connectionHeaders.contains("upgrade".equalsIgnoreCase _))
 
-  private def dispatch(requestPath: String,
-                       controllerClass: Class[_ <: AtmosphereController],
-                       upgradeHeader: Option[String],
-                       connectionHeaders: Seq[String]): Option[Handler] = {
-    if (!AtmosphereCoordinator.instance.matchPath(requestPath))
-      None
-
-    else {
-      val controller: AtmosphereController =
-        Option(injector.instanceOf(controllerClass)).getOrElse(controllerClass.newInstance)
-
-      // Netty fail to decode headers separated by a ','
-      val javaAction =
-        if (isWsSupported(upgradeHeader, connectionHeaders))
-          JavaWebSocket.ofString(controller.webSocket)
-        else
-          new JavaAction(components) {
-            val annotations = new JavaActionAnnotations(controllerClass, controllerClass.getMethod("http"))
-            val parser = javaBodyParserToScala(injector.instanceOf(annotations.parser))
-
-            def invocation = CompletableFuture.completedFuture(controller.http)
-          }
-
-      Some(javaAction)
-    }
-  }
-
-  def javaBodyParserToScala(parser: play.mvc.BodyParser[_]): BodyParser[RequestBody] = BodyParser { request =>
-    val accumulator = parser.apply(new play.core.j.RequestHeaderImpl(request)).asScala()
-    import play.api.libs.iteratee.Execution.Implicits.trampoline
-    accumulator.map { javaEither =>
-      if (javaEither.left.isPresent) {
-        Left(javaEither.left.get().asScala())
-      } else {
-        Right(new RequestBody(javaEither.right.get()))
-      }
-    }
-  }
-
   def dispatch(request: RequestHeader): Option[Handler] =
     dispatch(request, classOf[AtmosphereController])
 
@@ -79,6 +41,41 @@ class AtmosphereHttpRequestHandler @Inject()(components: JavaHandlerComponents,
     val upgradeHeader = request.headers.get("Upgrade")
     val connectionHeaders = Option(request.headers.get("Connection")).map(_.toSeq).getOrElse(Seq.empty)
     dispatch(request.path, controllerClass, upgradeHeader, connectionHeaders)
+  }
+
+  private def dispatch(requestPath: String,
+                       controllerClass: Class[_ <: AtmosphereController],
+                       upgradeHeader: Option[String],
+                       connectionHeaders: Seq[String]): Option[Handler] = {
+    if (AtmosphereCoordinator.instance.matchPath(requestPath)) {
+      val controller: AtmosphereController = Option(injector.instanceOf(controllerClass)).getOrElse(controllerClass.newInstance)
+      // Netty fail to decode headers separated by a ','
+      val javaAction =
+        if (isWsSupported(upgradeHeader, connectionHeaders))
+          controller.webSocket
+        else
+          new JavaAction(components) {
+            val annotations = new JavaActionAnnotations(controllerClass, controllerClass.getMethod("http"), new ActionCompositionConfiguration())
+            val parser = javaBodyParserToScala(injector.instanceOf(annotations.parser))
+            def invocation = controller.http
+          }
+
+      Some(javaAction)
+    }
+    else {
+      None
+    }
+  }
+
+  def javaBodyParserToScala(parser: play.mvc.BodyParser[_]): BodyParser[RequestBody] = BodyParser { request =>
+    val accumulator = parser.apply(new play.core.j.RequestHeaderImpl(request)).asScala()
+    accumulator.map { javaEither =>
+      if (javaEither.left.isPresent) {
+        Left(javaEither.left.get().asScala())
+      } else {
+        Right(new RequestBody(javaEither.right.get()))
+      }
+    }
   }
 
 }
