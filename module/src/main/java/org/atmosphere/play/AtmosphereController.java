@@ -74,7 +74,7 @@ public class AtmosphereController extends Controller {
     }
 
     public CompletionStage<Result> http() {
-		return CompletableFuture.supplyAsync(() -> Results.ok().chunked(new PlayAsyncIOWriter(request(), convertedSession(), response()).internal()).as("text/event-stream"), httpExecutionContext.current());
+		return CompletableFuture.supplyAsync(() -> Results.ok().chunked(new PlayAsyncIOWriter(request(), convertedSession(), response()).internal()), httpExecutionContext.current());
 
     }
 
