@@ -10,6 +10,7 @@ Fork the [samples workspace](https://github.com/Atmosphere/atmosphere-samples/tr
    % sbt update
    % sbt run
 ```
+![JDK8](https://github.com/Atmosphere/atmosphere-play/workflows/Java%20CI%20with%20Maven/badge.svg)
 
 Download [Atmosphere Play!](http://search.maven.org/#search%7Cga%7C1%7Catmosphere-play), use Maven or  [sbt](http://ntcoding.blogspot.ca/2013/09/atmosphere-scala-sbt-akka-step-by-step.html)
 
@@ -19,7 +20,7 @@ For Play 2.6.x+:
      <dependency>
          <groupId>org.atmosphere</groupId>
          <artifactId>atmosphere-play</artifactId>
-         <version>2.4.0</version>
+         <version>2.4.1</version>
      </dependency>
 ```
 
