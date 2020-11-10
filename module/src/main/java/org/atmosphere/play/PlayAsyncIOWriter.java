@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements PlayInternal<Source<ByteString, ?>> {
-    public static final int BUFFER_SIZE = 10;
+    public static final int BUFFER_SIZE = 256;
     private static final Logger logger = LoggerFactory.getLogger(PlayAsyncIOWriter.class);
     private final AtomicInteger pendingWrite = new AtomicInteger();
     private final AtomicBoolean asyncClose = new AtomicBoolean(false);
@@ -58,7 +58,7 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
                    out = new OutStream() {
                        @Override
                        public void write(String message) {
-                           actorRef.tell(message, ActorRef.noSender());
+                           actorRef.tell(ByteString.fromString(message), ActorRef.noSender());
                            byteWritten = true;
                        }
 
