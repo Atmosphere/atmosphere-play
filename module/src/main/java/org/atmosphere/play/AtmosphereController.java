@@ -22,12 +22,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.atmosphere.config.service.Singleton;
 import org.atmosphere.cpr.AtmosphereConfig;
 import org.atmosphere.cpr.AtmosphereFramework;
+import org.atmosphere.cpr.HeaderConfig;
 import org.atmosphere.util.IOUtils;
 import play.api.libs.streams.ActorFlow;
 import play.api.mvc.WebSocket;
 import play.api.mvc.WebSocket$;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.Controller;
+import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
 
@@ -66,22 +68,31 @@ public class AtmosphereController extends Controller {
         }
     }
 
-    public WebSocket webSocket() {
+    public WebSocket webSocket(Http.RequestHeader httpRequest) {
     	return WebSocket$.MODULE$.accept(
     			request -> ActorFlow.actorRef(
-    					req -> AtmosphereWebSocketActor.props(req, request, convertedSession(), config), BUFFER_SIZE, OverflowStrategy.dropNew(), actorSystem , materializer),
+    					req -> AtmosphereWebSocketActor.props(req, request, convertedSession(httpRequest.session()), config), BUFFER_SIZE, OverflowStrategy.dropNew(), actorSystem , materializer),
 				WebSocket.MessageFlowTransformer$.MODULE$.stringMessageFlowTransformer());
     }
 
-    public CompletionStage<Result> http() {
-		return CompletableFuture.supplyAsync(() -> Results.ok().chunked(new PlayAsyncIOWriter(request(), convertedSession(), response()).internal()), httpExecutionContext.current());
+    public CompletionStage<Result> http(Http.RequestHeader httpRequest) {
+		final String[] transport = httpRequest.queryString() != null ? httpRequest.queryString().get(HeaderConfig.X_ATMOSPHERE_TRANSPORT) : null;
+		return CompletableFuture.supplyAsync(() -> {
+			Result chunked = Results.ok().chunked(new PlayAsyncIOWriter((Http.Request) httpRequest, convertedSession(httpRequest.session())).internal());
+			// TODO: Configuring headers in Atmosphere won't work as the onReady is asynchronously called.
+			// TODO: Some Broadcaster's Cache won't work as well.
+			if (transport != null && transport.length > 0 && transport[0].equalsIgnoreCase(HeaderConfig.SSE_TRANSPORT)) {
+				chunked.as("text/event-stream");
+			}
+			return chunked;
+		}, httpExecutionContext.current());
 
     }
 
-    protected Map<String, Object> convertedSession() {
+    protected Map<String, Object> convertedSession(Http.Session session) {
     	final Map<String, Object> result;
     	if( converter != null ){
-    		result = converter.convertToAttributes(session());
+    		result = converter.convertToAttributes(session);
     	} else {
     		result = Collections.emptyMap();
     	}
