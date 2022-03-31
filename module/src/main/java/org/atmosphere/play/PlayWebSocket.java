@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Async-IO.org
+ * Copyright 2008-2022 Async-IO.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class PlayWebSocket extends org.atmosphere.websocket.WebSocket {
     private static final Logger logger = LoggerFactory.getLogger(PlayWebSocket.class);
 
-    private OutStream out;
+    private final OutStream out;
 
     private final AtomicBoolean firstWrite = new AtomicBoolean(false);
 

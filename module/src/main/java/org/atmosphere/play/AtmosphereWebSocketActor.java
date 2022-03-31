@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Async-IO.org
+ * Copyright 2008-2022 Async-IO.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,10 +34,10 @@ public class AtmosphereWebSocketActor extends AbstractActor {
 	private static final Logger.ALogger LOG = Logger.of(AtmosphereWebSocketActor.class);
 	private PlayWebSocket playWebSocket = null;
 	private WebSocketProcessor webSocketProcessor = null;
-	private ActorRef actorRef;
-	private RequestHeader requestHeader;
-	private Map<String, Object> additionalAttributes;
-	private  AtmosphereConfig atmosphereConfig;
+	private final ActorRef actorRef;
+	private final RequestHeader requestHeader;
+	private final Map<String, Object> additionalAttributes;
+	private final AtmosphereConfig atmosphereConfig;
 
 	public static Props props(ActorRef actorRef, RequestHeader requestHeader, Map<String, Object> additionalAtts, AtmosphereConfig config) {
 		return Props.create(AtmosphereWebSocketActor.class, actorRef, requestHeader, additionalAtts, config);
@@ -53,10 +53,10 @@ public class AtmosphereWebSocketActor extends AbstractActor {
 	@Override
 	public void preStart() {
 		try {
-			this.playWebSocket = new PlayWebSocket(actorRef, atmosphereConfig);
-			this.webSocketProcessor = WebSocketProcessorFactory.getDefault().getWebSocketProcessor(atmosphereConfig.framework());
+			playWebSocket = new PlayWebSocket(actorRef, atmosphereConfig);
+			webSocketProcessor = WebSocketProcessorFactory.getDefault().getWebSocketProcessor(atmosphereConfig.framework());
 			AtmosphereRequest atmosphereRequest = AtmosphereUtils.request(new Http.RequestImpl(requestHeader), additionalAttributes);
-			this.webSocketProcessor.open(playWebSocket, atmosphereRequest, AtmosphereResponseImpl.newInstance(atmosphereConfig, atmosphereRequest, playWebSocket));
+			webSocketProcessor.open(playWebSocket, atmosphereRequest, AtmosphereResponseImpl.newInstance(atmosphereConfig, atmosphereRequest, playWebSocket));
 		} catch (Throwable throwable) {
 			LOG.error("Failed to start the actor ", throwable);
 		}
@@ -64,7 +64,7 @@ public class AtmosphereWebSocketActor extends AbstractActor {
 
 	@Override
 	public void postStop() {
-		this.webSocketProcessor.close(playWebSocket, 1002);
+		webSocketProcessor.close(playWebSocket, 1004);
 	}
 
 	@Override
@@ -76,11 +76,11 @@ public class AtmosphereWebSocketActor extends AbstractActor {
 	}
 
 	private void handleString(String string) {
-		this.webSocketProcessor.invokeWebSocketProtocol(this.playWebSocket, string);
+		webSocketProcessor.invokeWebSocketProtocol(playWebSocket, string);
 	}
 
 	private void handleByteString(ByteString byteString) {
-		this.webSocketProcessor.invokeWebSocketProtocol(this.playWebSocket, byteString.toString());
+		webSocketProcessor.invokeWebSocketProtocol(playWebSocket, byteString.toString());
 	}
 
 }

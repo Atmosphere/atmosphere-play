@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Async-IO.org
+ * Copyright 2008-2022 Async-IO.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -78,7 +78,7 @@ public class AtmosphereCoordinator {
     }
 
     public boolean matchPath(String path) {
-        return mapper.map(path, framework().getAtmosphereHandlers()) == null ? false : true;
+        return mapper.map(path, framework().getAtmosphereHandlers()) != null;
     }
 
     public AtmosphereCoordinator path(String mappingPath) {
@@ -106,7 +106,7 @@ public class AtmosphereCoordinator {
         boolean resumeOnBroadcast = false;
         boolean keptOpen = true;
         boolean skipClose = false;
-        final PlayAsyncIOWriter w = PlayAsyncIOWriter.class.cast(response.getAsyncIOWriter());
+        final PlayAsyncIOWriter w = (PlayAsyncIOWriter) response.getAsyncIOWriter();
 
         try {
 
@@ -150,7 +150,7 @@ public class AtmosphereCoordinator {
         } finally {
             if (w != null && !resumeOnBroadcast && !keptOpen) {
                 if (!skipClose) {
-                    w.close((AtmosphereResponse) null);
+                    w.close(null);
                 }
             }
         }

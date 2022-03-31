@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Async-IO.org
+ * Copyright 2008-2022 Async-IO.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -124,11 +124,6 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
 
     @Override
     public AsyncIOWriter writeError(AtmosphereResponse r, int errorCode, String message) throws IOException {
-//        if (!response.isOpen()) {
-//            return this;
-//        }
-
-        // TODO: Set status
         logger.error("Error {}:{}", errorCode, message);
         out.write(message);
         return this;
@@ -182,9 +177,9 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
     }
 
     private void _close(AtmosphereRequest request) {
-        AtmosphereResourceImpl r = AtmosphereResourceImpl.class.cast(request.resource());
-        if (request != null && r != null) {
-            AsynchronousProcessor.class.cast(r.getAtmosphereConfig().framework().getAsyncSupport()).endRequest(r, true);
+        AtmosphereResourceImpl r = (AtmosphereResourceImpl) request.resource();
+        if (r != null) {
+            ((AsynchronousProcessor) r.getAtmosphereConfig().framework().getAsyncSupport()).endRequest(r, true);
         }
     }
 
