@@ -24,6 +24,7 @@ import play.mvc.Http;
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class AtmosphereUtils {
@@ -34,8 +35,8 @@ public class AtmosphereUtils {
         final String base = getBaseUri(request);
         final URI requestUri = new URI(base.substring(0, base.length() - 1) + request.uri());
         String ct = "text/plain";
-        if (request.getHeader("Content-Type") != null) {
-            ct = request.getHeader("Content-Type");
+        if (request.hasHeader("Content-Type")) {
+            ct = request.header("Content-Type").get();
         }
         String method = request.method();
 
@@ -110,7 +111,7 @@ public class AtmosphereUtils {
 
 
     public static String getBaseUri(final Http.Request request) {
-        return "http://" + request.getHeader(Http.HeaderNames.HOST) + "/";
+        return "http://" + request.header(Http.HeaderNames.HOST).orElse("") + "/";
 
     }
 
@@ -128,8 +129,8 @@ public class AtmosphereUtils {
     public static Map<String, String> getHeaders(final Http.Request request) {
         final Map<String, String> headers = new HashMap<>();
 
-        for (Map.Entry<String, String[]> e : request.headers().entrySet()) {
-            headers.put(e.getKey().toLowerCase(), e.getValue()[0]);
+        for (Map.Entry<String, List<String>> e : request.getHeaders().asMap().entrySet()) {
+            headers.put(e.getKey().toLowerCase(), e.getValue().get(0));
         }
 
         return headers;

@@ -21,6 +21,7 @@ import play.api.inject.Injector
 import play.api.mvc.{BodyParser, Handler, RequestHeader}
 import play.api.routing.Router
 import play.core.j._
+import play.mvc.Http
 import play.mvc.Http.RequestBody
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -55,24 +56,24 @@ class AtmosphereHttpRequestHandler @Inject()(components: JavaHandlerComponents,
   def dispatch(request: RequestHeader, controllerClass: Class[_ <: AtmosphereController]): Option[Handler] = {
     val upgradeHeader = request.headers.get("Upgrade")
     val connectionHeaders = Option(request.headers.get("Connection")).map(_.toSeq).getOrElse(Seq.empty)
-    dispatch(request.path, controllerClass, upgradeHeader, connectionHeaders)
+    dispatch(request, controllerClass, upgradeHeader, connectionHeaders)
   }
 
-  private def dispatch(requestPath: String,
+  private def dispatch(request: RequestHeader,
                        controllerClass: Class[_ <: AtmosphereController],
                        upgradeHeader: Option[String],
                        connectionHeaders: Seq[String]): Option[Handler] = {
-    if (AtmosphereCoordinator.instance.matchPath(requestPath)) {
+    if (AtmosphereCoordinator.instance.matchPath(request.path)) {
       val controller: AtmosphereController = Option(injector.instanceOf(controllerClass)).getOrElse(controllerClass.newInstance)
       // Netty fail to decode headers separated by a ','
       val javaAction =
         if (isWsSupported(upgradeHeader, connectionHeaders))
-          controller.webSocket
+          controller.webSocket(request.asJava)
         else
           new JavaAction(components) {
-            val annotations = new JavaActionAnnotations(controllerClass, controllerClass.getMethod("http"), new ActionCompositionConfiguration())
+            val annotations = new JavaActionAnnotations(controllerClass, controllerClass.getMethod("http", classOf[Http.RequestHeader]), new ActionCompositionConfiguration())
             val parser = javaBodyParserToScala(injector.instanceOf(annotations.parser))
-            def invocation = controller.http
+            def invocation(req : play.mvc.Http.Request) = controller.http(req)
           }
 
       Some(javaAction)

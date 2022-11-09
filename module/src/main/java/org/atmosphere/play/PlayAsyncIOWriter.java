@@ -52,7 +52,7 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
     private long lastWrite = 0;
     private boolean resumeOnBroadcast;
 
-    public PlayAsyncIOWriter(final Http.Request request, final Map<String, Object> additionalAttributes, final Http.Response response) {
+    public PlayAsyncIOWriter(final Http.Request request, final Map<String, Object> additionalAttributes) {
         final String[] transport = request.queryString() != null ? request.queryString().get(HeaderConfig.X_ATMOSPHERE_TRANSPORT) : null;
         this.source = Source.<ByteString>actorRef(BUFFER_SIZE, OverflowStrategy.dropNew()).mapMaterializedValue(actorRef -> {
                    out = new OutStream() {
@@ -98,12 +98,6 @@ public class PlayAsyncIOWriter extends AtmosphereInterceptorWriter implements Pl
            }
            return NotUsed.getInstance();
        });
-
-        // TODO: Configuring headers in Atmosphere won't work as the onReady is asynchronously called.
-        // TODO: Some Broadcaster's Cache won't work as well.
-        if (transport != null && transport.length > 0 && transport[0].equalsIgnoreCase(HeaderConfig.SSE_TRANSPORT)) {
-            response.setContentType("text/event-stream");
-        }
     }
 
     public Source<ByteString, ?> internal() {
