@@ -2,15 +2,7 @@
 
 This project brings the [Atmosphere Framework](https://github.com/Atmosphere/atmosphere) to the [Play!](http://www.playframework.com/) Framework. It support ALL Atmosphere's modules like Runtime, Jersey and Socket.IO.
 
-```bash
-   % sbt update
-   % sbt run
-```
-![JDK8](https://github.com/Atmosphere/atmosphere-play/workflows/Java%20CI%20with%20Maven/badge.svg)
-
-Download [Atmosphere Play!](http://search.maven.org/#search%7Cga%7C1%7Catmosphere-play), use Maven or  [sbt](http://ntcoding.blogspot.ca/2013/09/atmosphere-scala-sbt-akka-step-by-step.html)
-
-For Atmosphere 3.0+:
+For Play 3.0+ and Atmosphere 3.0+:
 
 ```xml
      <dependency>
