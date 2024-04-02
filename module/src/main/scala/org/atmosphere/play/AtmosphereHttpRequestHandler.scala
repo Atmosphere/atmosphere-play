@@ -15,27 +15,35 @@
  */
 package org.atmosphere.play
 
-import javax.inject.Inject
-import play.api.http._
+import play.api.OptionalDevContext
+import play.api.http.*
 import play.api.inject.Injector
-import play.api.mvc.{BodyParser, Handler, RequestHeader}
-import play.api.routing.Router
-import play.core.j._
+import play.api.mvc.*
+import play.core.j.*
 import play.mvc.Http
 import play.mvc.Http.RequestBody
 
+import javax.inject.{Inject, Provider}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 
+class AtmosphereHttpRequestHandler@Inject()(  webCommands: _root_.play.core.WebCommands,
+                                              optDevContext: _root_.play.api.OptionalDevContext,
+                                              router: _root_.javax.inject.Provider[_root_.play.api.routing.Router],
+                                              errorHandler: _root_.play.api.http.HttpErrorHandler,
+                                              configuration: _root_.play.api.http.HttpConfiguration,
+                                              filters: _root_.play.api.http.HttpFilters,
+                                              handlerComponents: _root_.play.core.j.JavaHandlerComponents,
+                                              injector: _root_.play.api.inject.Injector 
+                                                                 ) extends JavaCompatibleHttpRequestHandler( webCommands,
+                                                                                                             optDevContext,
+                                                                                                             router,
+                                                                                                             errorHandler,
+                                                                                                             configuration,
+                                                                                                             filters, 
+                                                                                                             handlerComponents) {
 
-class AtmosphereHttpRequestHandler @Inject()(components: JavaHandlerComponents,
-                                             router: Router,
-                                             errorHandler: HttpErrorHandler,
-                                             configuration: HttpConfiguration,
-                                             filters: HttpFilters,
-                                             injector: Injector)
-
-  extends JavaCompatibleHttpRequestHandler(router, errorHandler, configuration, filters, components) {
+  
 
   override def routeRequest(request: RequestHeader) = {
     dispatch(request) match {
@@ -64,13 +72,15 @@ class AtmosphereHttpRequestHandler @Inject()(components: JavaHandlerComponents,
                        upgradeHeader: Option[String],
                        connectionHeaders: Seq[String]): Option[Handler] = {
     if (AtmosphereCoordinator.instance.matchPath(request.path)) {
-      val controller: AtmosphereController = Option(injector.instanceOf(controllerClass)).getOrElse(controllerClass.newInstance)
+      //val controller: AtmosphereController = Option(components.instanceOf(controllerClass)).getOrElse(controllerClass.newInstance)
+      val controller: AtmosphereController = Option(injector.instanceOf(controllerClass)).getOrElse(controllerClass.getDeclaredConstructor().newInstance())
       // Netty fail to decode headers separated by a ','
       val javaAction =
         if (isWsSupported(upgradeHeader, connectionHeaders))
           controller.webSocket(request.asJava)
         else
-          new JavaAction(components) {
+         // new JavaAction(components) {
+          new JavaAction(handlerComponents) {
             val annotations = new JavaActionAnnotations(controllerClass, controllerClass.getMethod("http", classOf[Http.RequestHeader]), new ActionCompositionConfiguration())
             val parser = javaBodyParserToScala(injector.instanceOf(annotations.parser))
             def invocation(req : play.mvc.Http.Request) = controller.http(req)
@@ -94,4 +104,7 @@ class AtmosphereHttpRequestHandler @Inject()(components: JavaHandlerComponents,
     }
   }
 
-}
+
+  }
+
+

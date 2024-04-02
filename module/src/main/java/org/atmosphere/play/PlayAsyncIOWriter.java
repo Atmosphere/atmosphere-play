@@ -15,12 +15,12 @@
  */
 package org.atmosphere.play;
 
-import akka.NotUsed;
-import akka.actor.ActorRef;
-import akka.actor.Status;
-import akka.stream.OverflowStrategy;
-import akka.stream.javadsl.Source;
-import akka.util.ByteString;
+import org.apache.pekko.NotUsed;
+import org.apache.pekko.actor.ActorRef;
+import org.apache.pekko.actor.Status;
+import org.apache.pekko.stream.OverflowStrategy;
+import org.apache.pekko.stream.javadsl.Source;
+import org.apache.pekko.util.ByteString;
 import org.atmosphere.cpr.AsyncIOWriter;
 import org.atmosphere.cpr.AsynchronousProcessor;
 import org.atmosphere.cpr.AtmosphereInterceptorWriter;
