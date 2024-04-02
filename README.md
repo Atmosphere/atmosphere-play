@@ -2,10 +2,6 @@
 
 This project brings the [Atmosphere Framework](https://github.com/Atmosphere/atmosphere) to the [Play!](http://www.playframework.com/) Framework. It support ALL Atmosphere's modules like Runtime, Jersey and Socket.IO.
 
-## Try it!
-
-Fork the [samples workspace](https://github.com/Atmosphere/atmosphere-samples/tree/master/play-samples) and go under samples/chat or samples/jersey)
-
 ```bash
    % sbt update
    % sbt run
@@ -14,6 +10,15 @@ Fork the [samples workspace](https://github.com/Atmosphere/atmosphere-samples/tr
 
 Download [Atmosphere Play!](http://search.maven.org/#search%7Cga%7C1%7Catmosphere-play), use Maven or  [sbt](http://ntcoding.blogspot.ca/2013/09/atmosphere-scala-sbt-akka-step-by-step.html)
 
+For Atmosphere 3.0+:
+
+```xml
+     <dependency>
+         <groupId>org.atmosphere</groupId>
+         <artifactId>atmosphere-play</artifactId>
+         <version>3.0.0</version>
+     </dependency>
+```
 
 For Play 2.8.x+ and Atmosphere 2.7+:
 
@@ -24,62 +29,6 @@ For Play 2.8.x+ and Atmosphere 2.7+:
          <version>2.6.0</version>
      </dependency>
 ```
-
-For Play 2.6.x+ and Atmosphere 2.7+:
-
-```xml
-     <dependency>
-         <groupId>org.atmosphere</groupId>
-         <artifactId>atmosphere-play</artifactId>
-         <version>2.5.0</version>
-     </dependency>
-```
-
-For Play 2.5.x+:
-
-```xml
-     <dependency>
-         <groupId>org.atmosphere</groupId>
-         <artifactId>atmosphere-play</artifactId>
-         <version>2.3.0</version>
-     </dependency>
-```
-
-For Play 2.4.x+:
-
-```xml
-     <dependency>
-         <groupId>org.atmosphere</groupId>
-         <artifactId>atmosphere-play</artifactId>
-         <version>2.2.0</version>
-     </dependency>
-```
-
-For Play 2.2.x+:
-
-```xml
-     <dependency>
-         <groupId>org.atmosphere</groupId>
-         <artifactId>atmosphere-play</artifactId>
-         <version>2.1.2</version>
-     </dependency>
-```
-
-For Play 2.1.x:
-
-```xml
-     <dependency>
-         <groupId>org.atmosphere</groupId>
-         <artifactId>atmosphere-play</artifactId>
-         <version>1.0.0</version>
-     </dependency>
-```
-
-## Join the growing community
-
-If you are interested, subscribe to our [mailing list](http://groups.google.com/group/atmosphere-framework) for more info!  We are on irc.freenode.net under #atmosphere-comet
-
-## WebSockets, Server Sent Events, Streaming and Long-Polling transparently supported!
 
 Server side using atmosphere-runtime
 ```java
@@ -125,36 +74,6 @@ public class Chat {
         return message;
     }
 ```
-
-Server side using atmosphere-jersey
-```java
- @Path("/chat")
- public class ChatResource {
-
-     /**
-      * Suspend the response without writing anything back to the client.
-      * @return a white space
-      */
-     @Suspend(contentType = "application/json")
-     @GET
-     public String suspend() {
-         return "";
-     }
-
-     /**
-      * Broadcast the received message object to all suspended response. Do not write back the message to the calling connection.
-      * @param message a {@link Message}
-      * @return a {@link Response}
-      */
-     @Broadcast(writeEntity = false)
-     @POST
-     @Produces("application/json")
-     public Response broadcast(Message message) {
-         return new Response(message.getAuthor(), message.getMessage());
-     }
-}
-```
-
 and on the client side,
 ```js
     $(function () {
@@ -193,6 +112,3 @@ and on the client side,
 
         subSocket = socket.subscribe(request);
 ```
-
-
-[![Analytics](https://ga-beacon.appspot.com/UA-31990725-2/Atmosphere/atmosphere-play)]

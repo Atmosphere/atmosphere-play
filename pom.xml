@@ -9,7 +9,7 @@
     <groupId>org.atmosphere</groupId>
     <artifactId>play-project</artifactId>
     <name>Atmosphere Play Project</name>
-    <version>2.6.1-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>
         Atmosphere running on top of Play!
@@ -25,10 +25,6 @@
         <system>github</system>
         <url>https://github.com/Atmosphere/atmosphere-play/issues</url>
     </issueManagement>
-
-    <prerequisites>
-        <maven>2.0.9</maven>
-    </prerequisites>
     <developers>
         <developer>
             <id>jfarcand</id>
