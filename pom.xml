@@ -47,10 +47,20 @@
         <dependencies>
             <dependency>
                 <groupId>com.typesafe.play</groupId>
+                <artifactId>play_3</artifactId>
+                <version>2.9.2</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!--
+            <dependency>
+                <groupId>com.typesafe.play</groupId>
                 <artifactId>play_2.12</artifactId>
                 <version>2.8.15</version>
                 <scope>provided</scope>
             </dependency>
+            -->
+
             <dependency>
                 <groupId>org.atmosphere</groupId>
                 <artifactId>atmosphere-play</artifactId>
@@ -252,7 +262,10 @@
         <distMgmtSnapshotsUrl>http://oss.sonatype.org/content/repositories/snapshots</distMgmtSnapshotsUrl>
         <surefire.redirectTestOutputToFile>false</surefire.redirectTestOutputToFile>
         <source.property>1.8</source.property>
-        <target.property>1.8</target.property>
+        <target.property>11</target.property>
         <atmosphere.version>2.7.6</atmosphere.version>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
     </properties>
+
 </project>

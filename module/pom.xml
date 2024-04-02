@@ -19,7 +19,7 @@
         </dependency>
         <dependency>
             <groupId>com.typesafe.play</groupId>
-            <artifactId>play_2.12</artifactId>
+            <artifactId>play_3</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

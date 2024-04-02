@@ -55,7 +55,16 @@ public class AtmosphereWebSocketActor extends AbstractActor {
 		try {
 			playWebSocket = new PlayWebSocket(actorRef, atmosphereConfig);
 			webSocketProcessor = WebSocketProcessorFactory.getDefault().getWebSocketProcessor(atmosphereConfig.framework());
-			AtmosphereRequest atmosphereRequest = AtmosphereUtils.request(new Http.RequestImpl(requestHeader), additionalAttributes);
+			
+			Http.Request javaRequest = new Http.RequestBuilder()
+					.method(requestHeader.method())
+					.uri(requestHeader.uri())
+					.headers(requestHeader.headers().asJava())
+					//.bodyRaw(requestHeader.body().asRaw().asBytes().toArray())
+					.build();
+
+
+			AtmosphereRequest atmosphereRequest = AtmosphereUtils.request(javaRequest, additionalAttributes);
 			webSocketProcessor.open(playWebSocket, atmosphereRequest, AtmosphereResponseImpl.newInstance(atmosphereConfig, atmosphereRequest, playWebSocket));
 		} catch (Throwable throwable) {
 			LOG.error("Failed to start the actor ", throwable);
