@@ -46,21 +46,11 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.typesafe.play</groupId>
+                <groupId>org.playframework</groupId>
                 <artifactId>play_3</artifactId>
-                <version>2.9.2</version>
+                <version>3.0.2</version>
                 <scope>provided</scope>
             </dependency>
-
-            <!--
-            <dependency>
-                <groupId>com.typesafe.play</groupId>
-                <artifactId>play_2.12</artifactId>
-                <version>2.8.15</version>
-                <scope>provided</scope>
-            </dependency>
-            -->
-
             <dependency>
                 <groupId>org.atmosphere</groupId>
                 <artifactId>atmosphere-play</artifactId>

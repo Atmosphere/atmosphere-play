@@ -18,7 +18,7 @@
             <artifactId>atmosphere-runtime</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.typesafe.play</groupId>
+            <groupId>org.playframework</groupId>
             <artifactId>play_3</artifactId>
         </dependency>
         <dependency>

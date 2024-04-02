@@ -15,8 +15,8 @@
  */
 package org.atmosphere.play;
 
-import akka.actor.ActorRef;
-import akka.actor.Status;
+import org.apache.pekko.actor.ActorRef;
+import org.apache.pekko.actor.Status;
 import org.atmosphere.cpr.AtmosphereConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -15,9 +15,9 @@
  */
 package org.atmosphere.play;
 
-import akka.actor.ActorSystem;
-import akka.stream.Materializer;
-import akka.stream.OverflowStrategy;
+import org.apache.pekko.actor.ActorSystem;
+import org.apache.pekko.stream.Materializer;
+import org.apache.pekko.stream.OverflowStrategy;
 import org.apache.commons.lang3.StringUtils;
 import org.atmosphere.config.service.Singleton;
 import org.atmosphere.cpr.AtmosphereConfig;
