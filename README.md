@@ -1,3 +1,11 @@
+> **⚠️ This repository is legacy and no longer actively maintained.**
+>
+> The Atmosphere Framework now runs natively on Spring Boot 4 and Quarkus 3 without needing a Play! adapter. See the [Atmosphere 4](https://github.com/Atmosphere/atmosphere) monorepo.
+>
+> **→ [github.com/Atmosphere/atmosphere](https://github.com/Atmosphere/atmosphere)**
+
+---
+
 ## Playtosphere: Atmosphere for Play!
 
 This project brings the [Atmosphere Framework](https://github.com/Atmosphere/atmosphere) to the [Play!](http://www.playframework.com/) Framework. 
